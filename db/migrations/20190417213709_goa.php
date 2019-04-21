@@ -142,7 +142,6 @@ class Goa extends AbstractMigration {
       ->addColumn('processor_trans_id', 'string', ['limit' => 255])
       ->addColumn('cc_num', 'string', ['limit' => 255])
       ->addColumn('cc_type', 'string', ['limit' => 255])
-      ->addColumn('response', 'text')
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('start_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('end_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])

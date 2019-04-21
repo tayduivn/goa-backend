@@ -22,147 +22,110 @@ class ProductController extends HandleRequest {
     $this->upload   = $container->get('upload_directory');
   }
 
-  public function getId(Request $request, Response $response, $args) {
-    $idobject = (int)$args['id'];
-    if (empty($idobject))
-      return $this->handleRequest($response, 400, 'Requerid id');
-
-    $statement = $this->db->prepare("SELECT * FROM object WHERE idobject = :idobject AND active != '0'");
-    $statement->execute(['idobject' => $idobject]);;
-    $result = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getDate(Request $request, Response $response, $args) {
-    $date = $args['date'];
-    if (empty($date))
-      return $this->handleRequest($response, 400, 'Requerid date');
-
-    $statement = $this->db->prepare("SELECT * FROM object WHERE date_created = :date AND active != '0'");
-    $statement->execute(['date' => $date]);;
-    $result = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM object WHERE active != '0'");
-    $statement->execute();
-    $result  = $statement->fetchAll();
-    $details = is_array($result) ? $result : [];
+    $id    = $request->getQueryParam('id');
+    $order = $request->getQueryParam('order', $default = 'ASC');
 
-    return $this->handleRequest($response, 200, '', $details);
+    if ($id !== null) {
+      $statement = $this->db->prepare("SELECT * FROM product WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT * FROM product WHERE active != '0'");
+      $statement->execute();
+    }
+    return $this->getSendResponse($response, $statement);
   }
 
   public function register(Request $request, Response $response, $args) {
     $request_body      = $request->getParsedBody();
-    $name              = $request_body['name_object'];
-    $height            = $request_body['height'];
-    $width             = $request_body['width'];
-    $weight            = $request_body['weight'];
+    $sku               = $request_body['sku'];
+    $name              = $request_body['name'];
+    $description_short = $request_body['description_short'];
+    $description_one   = $request_body['description_one'];
+    $description_two   = $request_body['description_two'];
+    $preparation       = $request_body['preparation'];
+    $regular_price     = $request_body['regular_price'];
     $quantity          = $request_body['quantity'];
-    $service_idservice = $request_body['service_idservice'];
+    $user_id           = $request_body['user_id'];
 
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      $filename = 'no-image.png';
-    }
-
-    if (!isset($name) && !isset($height) && !isset($width) && !isset($weight) && !isset($quantity)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name_object, height, width, weight and quantity');
+    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($description_two) && !isset($regular_price) && !isset($quantity) && !isset($user_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
     $prepare = $this->db->prepare(
-      "INSERT INTO object (name_object, image, height, width, weight, quantity, date_created, service_idservice) 
-        VALUES (:name, :image, :height,  :width,  :weight,  :quantity, NOW(), :service_idservice)"
+      "INSERT INTO product (sku, name, description_short, description_one, description_two, preparation, regular_price, quantity, user_id) 
+        VALUES (:sku, :name,  :description_short,  :description_one,  :description_two, :regular_price, :regular_price, :quantity, :user_id)"
     );
     $result  = $prepare->execute([
+                                   'sku'               => $sku,
                                    'name'              => $name,
-                                   'height'            => $height,
-                                   'width'             => $width,
-                                   'weight'            => $weight,
+                                   'description_short' => $description_short,
+                                   'description_one'   => $description_one,
+                                   'description_two'   => $description_two,
+                                   'preparation'       => $preparation,
+                                   'regular_price'     => $regular_price,
                                    'quantity'          => $quantity,
-                                   'image'             => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                   'service_idservice' => $service_idservice
+                                   'user_id'           => $user_id,
                                  ]);
 
-    return $result ? $this->handleRequest($response, 200, "Datos registrados", ['idObject' => $this->db->lastInsertId()]) : $this->handleRequest($response, 500);
+    return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
     $request_body      = $request->getParsedBody();
-    $idobject          = $request_body['idobject'];
-    $name              = $request_body['name_object'];
-    $height            = $request_body['height'];
-    $width             = $request_body['width'];
-    $weight            = $request_body['weight'];
+    $id                = $request_body['id'];
+    $sku               = $request_body['name_object'];
+    $name              = $request_body['name'];
+    $description_short = $request_body['description_short'];
+    $description_one   = $request_body['description_one'];
+    $description_two   = $request_body['description_two'];
+    $preparation       = $request_body['preparation'];
+    $regular_price     = $request_body['regular_price'];
     $quantity          = $request_body['quantity'];
-    $service_idservice = $request_body['service_idservice'];
+    $user_id           = $request_body['user_id'];
 
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      $filename = 'no-image.png';
-    }
-
-    if (!isset($name) && !isset($height) && !isset($width) && !isset($weight) && !isset($quantity)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name_object, height, width, weight and quantity');
+    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($description_two) && !isset($preparation) && !isset($regular_price) && !isset($quantity) && !isset($user_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare(
-      "UPDATE object SET name_object = :name, image = :image, height = :height, width = :width, weight = :weight, quantity = :quantity
-        WHERE idobject = :idobject"
+      "UPDATE product 
+        SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
+            description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
+            quantity = :quantity, user_id = :user_id
+        WHERE id = :id"
     );
 
     $result = $prepare->execute([
-                                  'idobject'          => $idobject,
+                                  'id'                => $id,
+                                  'sku'               => $sku,
                                   'name'              => $name,
-                                  'height'            => $height,
-                                  'width'             => $width,
-                                  'weight'            => $weight,
+                                  'description_short' => $description_short,
+                                  'description_one'   => $description_one,
+                                  'description_two'   => $description_two,
+                                  'preparation'       => $preparation,
+                                  'regular_price'     => $regular_price,
                                   'quantity'          => $quantity,
-                                  'image'             => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                  'service_idservice' => $service_idservice
+                                  'user_id'           => $user_id,
                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idobject     = $request_body['idobject'];
+    $id           = $request_body['id'];
 
-    if (!isset($idobject)) {
-      return $this->handleRequest($response, 400, 'Missing fields idobject');
+    if (!isset($id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM object WHERE idobject = :idobject AND active != '0'");
-    $statement->execute(['idobject' => $idobject]);
+    $statement = $this->db->prepare("SELECT * FROM product WHERE id = :id AND active != '0'");
+    $statement->execute(['id' => $id]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE object SET active = :active WHERE idobject = :idobject"
-      );
-      $result  = $prepare->execute(['idobject' => $idobject, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      $prepare = $this->db->prepare("UPDATE product SET active = :active WHERE id = :id");
+      $result  = $prepare->execute(['id' => $id, 'active' => 0]);
+      return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {
       return $this->handleRequest($response, 404, "id not found");
     }

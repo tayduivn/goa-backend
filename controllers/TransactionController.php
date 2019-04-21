@@ -22,129 +22,102 @@ class TransactionController extends HandleRequest {
     $this->upload   = $container->get('upload_directory');
   }
 
-  public function getId(Request $request, Response $response, $args) {
-    $idpayment = (int)$args['id'];
-    if (empty($idpayment))
-      return $this->handleRequest($response, 400, 'Requerid id');
-
-    $statement = $this->db->prepare("SELECT * FROM payment WHERE order_idorder = :order_idorder AND active != '0'");
-    $statement->execute(['order_idorder' => $idpayment]);
-    $result = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getDate(Request $request, Response $response, $args) {
-    $date = $args['date'];
-    if (empty($date))
-      return $this->handleRequest($response, 400, 'Requerid date');
-
-    $statement = $this->db->prepare("SELECT * FROM payment WHERE date_created = :date AND active != '0'");
-    $statement->execute(['date' => $date]);
-    $result = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM payment WHERE active != '0'");
-    $statement->execute();
-    $result  = $statement->fetchAll();
-    $details = is_array($result) ? $result : [];
+    $id    = $request->getQueryParam('id');
+    $order = $request->getQueryParam('order', $default = 'ASC');
 
-    return $this->handleRequest($response, 200, '', $details);
+    if ($id !== null) {
+      $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE active != '0'");
+      $statement->execute();
+    }
+    return $this->getSendResponse($response, $statement);
   }
 
   public function register(Request $request, Response $response, $args) {
-    $request_body  = $request->getParsedBody();
-    $order_idorder = $request_body['order_idorder'];
+    $request_body       = $request->getParsedBody();
+    $code               = $request_body['code'];
+    $processor          = $request_body['processor'];
+    $processor_trans_id = $request_body['processor_trans_id'];
+    $cc_num             = $request_body['cc_num'];
+    $cc_type            = $request_body['cc_type'];
+    $order_id           = $request_body['order_id'];
 
-    if (!isset($image) && !isset($order_idorder)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required origin_order image order_idorder');
-    }
-
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
+    if (!isset($code) and !isset($processor) and !isset($processor_trans_id) and !isset($cc_num) and !isset($cc_type) and !isset($order_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare(
-      "INSERT INTO payment (`image`, `date_created`, `order_idorder`) 
-                    VALUES (:image, NOW(), :order_idorder)"
+      "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`, `cc_num`, `cc_type`, `order_id`) 
+      VALUES (:code, :processor, :processor_trans_id, :cc_num, :cc_type, :order_id)"
     );
     $result  = $prepare->execute([
-                                   'image'         => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                   'order_idorder' => $order_idorder,
+                                   'code'               => $code,
+                                   'processor'          => $processor,
+                                   'processor_trans_id' => $processor_trans_id,
+                                   'cc_num'             => $cc_num,
+                                   'cc_type'            => $cc_type,
+                                   'order_id'           => $order_id,
                                  ]);
-    return $result ? $this->handleRequest($response, 201, "Datos registrados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
-    $request_body  = $request->getParsedBody();
-    $idpayment     = $request_body['idpayment'];
-    $order_idorder = $request_body['order_idorder'];
+    $request_body       = $request->getParsedBody();
+    $id                 = $request_body['id'];
+    $processor          = $request_body['processor'];
+    $processor_trans_id = $request_body['processor_trans_id'];
+    $cc_num             = $request_body['cc_num'];
+    $cc_type            = $request_body['cc_type'];
+    $order_id           = $request_body['order_id'];
 
-    if (!isset($idpayment) && !isset($image) && !isset($order_idorder)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required idpayment image order_idorder');
-    }
-
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
+    if (!isset($code) and !isset($processor) and !isset($processor_trans_id) and !isset($cc_num) and !isset($cc_type) and !isset($order_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare(
-      "UPDATE payment SET image = :image, order_idorder = :order_idorder
-      WHERE idpayment = :idpayment"
+      "UPDATE transaction 
+        SET code = :code, processor = :processor, processor_trans_id = :processor_trans_id, cc_num = :cc_num, 
+            cc_type = :cc_type, order_id = :order_id
+      WHERE id = :id"
     );
 
     $result = $prepare->execute([
-                                  'idpayment'     => $idpayment,
-                                  'image'         => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                  'order_idorder' => $order_idorder
+                                  'id'                 => $id,
+                                  'code'               => $code,
+                                  'processor'          => $processor,
+                                  'processor_trans_id' => $processor_trans_id,
+                                  'cc_num'             => $cc_num,
+                                  'cc_type'            => $cc_type,
+                                  'order_id'           => $order_id,
                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
 
   public function delete(Request $request, Response $response, $args) {
-    $request_body    = $request->getParsedBody();
-    $idpayment = $request_body['idpayment'];
+    $request_body = $request->getParsedBody();
+    $id           = $request_body['id'];
 
-    if (!isset($idpayment)) {
-      return $this->handleRequest($response, 400, 'Missing fields idpayment');
+    if (!isset($id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM payment WHERE idpayment = :idpayment AND active != '0'");
-    $statement->execute(['idpayment' => $idpayment]);
+    $statement = $this->db->prepare("SELECT * FROM transaction WHERE id = :id AND active != '0'");
+    $statement->execute(['id' => $id]);
     $result = $statement->fetch();
     if (is_array($result)) {
       $prepare = $this->db->prepare(
-        "UPDATE payment SET active = :active WHERE idpayment = :idpayment"
+        "UPDATE transaction SET active = :active WHERE id = :id"
       );
-      $result  = $prepare->execute(['idpayment' => $idpayment, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      $result  = $prepare->execute(['id' => $id, 'active' => 0]);
+
+      return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {
-      return $this->handleRequest($response, 404, "id not found");
+      return $this->handleRequest($response, 404, "Información no encontrada");
     }
   }
 
