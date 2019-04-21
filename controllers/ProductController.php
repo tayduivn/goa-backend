@@ -25,21 +25,40 @@ class ProductController extends HandleRequest {
   public function getAll(Request $request, Response $response, $args) {
     $id        = $request->getQueryParam('id');
     $order     = $request->getQueryParam('order', $default = 'ASC');
-    $limit     = $request->getQueryParam('limit', $default = '1');
-    $isShopped = $request->getQueryParam('isShopped', $default = '1');
+    $limit     = $request->getQueryParam('limit', $default = '-1');
+    $isShopped = $request->getQueryParam('isShopped', $default = false);
+    $isFavorite = $request->getQueryParam('isFavorite', $default = false);
 
     if ($id !== null && $isShopped !== null) {
-      $statement = $this->db->prepare("SELECT * 
-                                        FROM product  
+      $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0' ORDER BY :order");
       $statement->execute(['id' => $id, 'order' => $order]);
     } else {
-      $statement = $this->db->prepare("SELECT * 
-                                        FROM product 
-                                        WHERE product.active != '0' ORDER BY product.id ASC");
+      $statement = $this->db->prepare("SELECT * FROM product 
+                                        WHERE product.active != '0' ORDER BY product.inserted_at DESC");
       $statement->execute(['order' => $order]);
     }
-    return $this->getSendResponse($response, $statement);
+
+    $result = $statement->fetchAll();
+
+    if (is_array($result)) {
+      foreach ($result as $index => $product) {
+        $statement = $this->db->prepare("SELECT image FROM product_image
+                                        INNER JOIN product p on product_image.product_id = p.id
+                                        WHERE product_image.active != 0 AND product_image.product_id = :id");
+        $statement->execute(['id' => $product['id']]);
+        $resultImage = $statement->fetchAll();
+
+        if (is_array($resultImage) and !empty($resultImage)) {
+          $result[$index]['image'] = $resultImage;
+        } else {
+          $result[$index]['image'] = ['name' => 'http://goa-backend/src/uploads/6e97ffd3e4da4924.jpeg'];
+        }
+      }
+      return $this->handleRequest($response, 200, '', $result);
+    } else {
+      return $this->handleRequest($response, 204, '', []);
+    }
   }
 
   public function register(Request $request, Response $response, $args) {
