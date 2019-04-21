@@ -1,0 +1,39 @@
+GET {{host}}/api/messagenotification/getID/4
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/messagenotification/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/messagenotification/register
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "message": "Hola",
+  "user_iduser": "5"
+}
+###
+
+PUT {{host}}/api/messagenotification/update
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idmessage_notification": "3",
+  "message": "Hola",
+  "user_iduser": "5"
+}
+###
+
+DELETE {{host}}/api/messagenotification/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idmessage_notification": "3"
+}
+###

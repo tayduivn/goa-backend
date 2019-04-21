@@ -1,0 +1,44 @@
+GET {{host}}/api/content/getID/4
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/content/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###u
+
+GET {{host}}/api/content/getStatus/Todo
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/content/register
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "object_idobject": "2",
+  "order_idorder": "5"
+}
+###
+
+PUT {{host}}/api/admin/content/update
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idcontent": "3",
+  "object_idobject": "2",
+  "order_idorder": "5"
+}
+###
+
+DELETE {{host}}/api/content/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idcontent": "3"
+}
+###

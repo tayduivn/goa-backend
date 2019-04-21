@@ -1,0 +1,64 @@
+POST {{host}}/api/public/user/login
+Content-Type: application/json
+
+{
+  "email": "Ivans10@gmail.com",
+  "password": "123456"
+}
+
+> {% client.global.set("auth_token", response.body.data.token); %}
+
+###
+
+GET {{host}}/api/admin/user/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/src/uploads/7738d966b6fb7811.jpeg
+Accept: application/json
+###
+
+GET {{host}}/api/public/endpoints
+Accept: application/json
+###
+
+GET {{host}}/api/user/profile/3
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/public/user/register
+Content-Type: application/json
+
+{
+  "name": "Ivans",
+  "password": "123456",
+  "email": "Ivans10@gmail.com",
+  "street": "Maracay",
+  "phone": "04125456465",
+  "type": "Administrador"
+}
+###
+
+PUT {{host}}/api/user/update
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "userid": "17",
+  "password": "13456",
+  "street": "Valencia",
+  "phone": "04125456465",
+  "type": "Administrador"
+}
+###
+
+DELETE {{host}}/api/user/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "userid": "1"
+}
+###

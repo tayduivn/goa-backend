@@ -1,0 +1,39 @@
+GET {{host}}/api/admin/transport/getID/4
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/admin/transport/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/transport/register
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name_truck": "Ivans",
+  "user_iduser": "5"
+}
+###
+
+PUT {{host}}/api/transport/update
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idtransport": "3",
+  "name_truck": "Ivans",
+  "user_iduser": "5"
+}
+###
+
+DELETE {{host}}/api/transport/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idtransport": "3"
+}
+###

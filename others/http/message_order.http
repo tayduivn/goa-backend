@@ -1,0 +1,47 @@
+GET {{host}}/api/messageorder/getID/4
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/messageorder/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/messageorder/register
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "date_withdrawal": "Hola",
+  "date_delivery": "5",
+  "id_client": "5",
+  "order_idorder": "5",
+  "user_iduser": "5",
+  "transport_idtransport": "5"
+}
+###
+
+PUT {{host}}/api/messageorder/update
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idmessage_order": "3",
+  "date_withdrawal": "Hola",
+  "date_delivery": "5",
+  "id_client": "5",
+  "order_idorder": "5",
+  "user_iduser": "5",
+  "transport_idtransport": "5"
+}
+###
+
+DELETE {{host}}/api/messageorder/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idmessage_order": "3"
+}
+###

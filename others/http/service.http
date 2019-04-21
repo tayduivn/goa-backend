@@ -1,0 +1,65 @@
+GET {{host}}/api/public/service/getID/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/public/service/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+###
+
+GET {{host}}/api/public/service/getID/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/admin/service/register
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{auth_token}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Testing
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
+Content-Type: image/jpeg
+
+< ./../image/fuki.jpeg
+--WebAppBoundary--
+
+###
+
+POST {{host}}/api/admin/service/update
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{auth_token}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="idservice"
+Content-Type: text/plain
+
+3
+
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Category test
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
+Content-Type: image/jpeg
+
+< ./../image/fuki.jpeg
+--WebAppBoundary--
+###
+
+DELETE {{host}}/api/admin/service/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idservice": "2"
+}
+###

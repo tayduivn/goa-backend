@@ -1,0 +1,53 @@
+GET {{host}}/api/public/category/getID/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+GET {{host}}/api/public/category/getAll
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+###
+
+POST {{host}}/api/admin/category/register
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{auth_token}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Category test
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
+Content-Type: image/jpeg
+
+< ./../image/fuki.jpeg
+--WebAppBoundary--
+
+###
+
+PUT {{host}}/api/admin/category/update
+Content-Type: application/x-www-form-urlencoded
+Authorization: Bearer {{auth_token}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="name"
+Content-Type: text/plain
+
+Category test
+--WebAppBoundary
+Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
+Content-Type: image/jpeg
+
+< ./../image/fuki.jpeg
+--WebAppBoundary--
+###
+
+DELETE {{host}}/api/admin/category/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idcategory": "1"
+}
+###
