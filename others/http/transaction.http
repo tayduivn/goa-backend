@@ -1,20 +1,14 @@
-GET {{host}}/api/public/service/getID/1
+GET {{host}}/api/public/object/getID/1
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
 
-GET {{host}}/api/public/service/getAll
-Accept: application/json
-Authorization: Bearer {{auth_token}}
-###
-###
-
-GET {{host}}/api/public/service/getID/1
+GET {{host}}/api/public/object/getAll
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
 
-POST {{host}}/api/admin/service/register
+POST {{host}}/api/admin/object/register
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 Authorization: Bearer {{auth_token}}
 
@@ -22,7 +16,12 @@ Authorization: Bearer {{auth_token}}
 Content-Disposition: form-data; name="name"
 Content-Type: text/plain
 
-Testing
+Category test
+--WebAppBoundary
+Content-Disposition: form-data; name="service_idservice"
+Content-Type: text/plain
+
+3
 --WebAppBoundary
 Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
 Content-Type: image/jpeg
@@ -32,15 +31,15 @@ Content-Type: image/jpeg
 
 ###
 
-POST {{host}}/api/admin/service/update
+POST {{host}}/api/admin/object/update
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 Authorization: Bearer {{auth_token}}
 
 --WebAppBoundary
-Content-Disposition: form-data; name="idservice"
+Content-Disposition: form-data; name="idobject"
 Content-Type: text/plain
 
-3
+1
 
 --WebAppBoundary
 Content-Disposition: form-data; name="name"
@@ -55,11 +54,11 @@ Content-Type: image/jpeg
 --WebAppBoundary--
 ###
 
-DELETE {{host}}/api/admin/service/delete
+DELETE {{host}}/api/admin/object/delete
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "idservice": "2"
+  "idobject": "1"
 }
 ###

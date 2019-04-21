@@ -1,4 +1,4 @@
-POST {{host}}/api/public/user/login
+POST {{host}}/api/public/users/login
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
 
 ###
 
-GET {{host}}/api/admin/user/getAll
+GET {{host}}/api/admin/users/getAll
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
@@ -23,12 +23,12 @@ GET {{host}}/api/public/endpoints
 Accept: application/json
 ###
 
-GET {{host}}/api/user/profile/3
+GET {{host}}/api/users/profile/3
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
 
-POST {{host}}/api/public/user/register
+POST {{host}}/api/public/users/register
 Content-Type: application/json
 
 {
@@ -41,12 +41,12 @@ Content-Type: application/json
 }
 ###
 
-PUT {{host}}/api/user/update
+PUT {{host}}/api/users/update
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "userid": "17",
+  "usersid": "17",
   "password": "13456",
   "street": "Valencia",
   "phone": "04125456465",
@@ -54,11 +54,11 @@ Authorization: Bearer {{auth_token}}
 }
 ###
 
-DELETE {{host}}/api/user/delete
+DELETE {{host}}/api/users/delete
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "userid": "1"
+  "usersid": "1"
 }
 ###

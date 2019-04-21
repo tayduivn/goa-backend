@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface as ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class ImagesController extends HandleRequest {
+class ImageController extends HandleRequest {
 
   private $db       = null;
   private $logger   = null;

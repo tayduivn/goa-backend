@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface as ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class RoleController extends HandleRequest {
+class ReviewController extends HandleRequest {
 
   private $db       = null;
   private $logger   = null;
@@ -23,12 +23,12 @@ class RoleController extends HandleRequest {
   }
 
   public function getId(Request $request, Response $response, $args) {
-    $idcategory = (int)$args['id'];
-    if (empty($idcategory))
+    $idimages = (int)$args['id'];
+    if (empty($idimages))
       return $this->handleRequest($response, 400, 'Requerid id');
 
-    $statement = $this->db->prepare("SELECT * FROM category WHERE idcategory = :idcategory AND active != '0'");
-    $statement->execute(['idcategory' => $idcategory]);
+    $statement = $this->db->prepare("SELECT * FROM images WHERE idimages = :idimages AND active != '0'");
+    $statement->execute(['idimages' => $idimages]);
     $result  = $statement->fetch();
     if (is_array($result)) {
       $details = $result;
@@ -44,7 +44,7 @@ class RoleController extends HandleRequest {
     if (empty($date))
       return $this->handleRequest($response, 400, 'Requerid date');
 
-    $statement = $this->db->prepare("SELECT * FROM category WHERE date_created = :date AND active != '0'");
+    $statement = $this->db->prepare("SELECT * FROM images WHERE date_created = :date AND active != '0'");
     $statement->execute(['date' => $date]);
     $result  = $statement->fetch();
     if (is_array($result)) {
@@ -57,7 +57,7 @@ class RoleController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM category WHERE active != '0'");
+    $statement = $this->db->prepare("SELECT * FROM images WHERE active != '0'");
     $statement->execute();
     $result  = $statement->fetchAll();
     $details = is_array($result) ? $result : [];
@@ -66,9 +66,6 @@ class RoleController extends HandleRequest {
   }
 
   public function register(Request $request, Response $response, $args) {
-    $request_body = $request->getParsedBody();
-    $name         = $request_body['name'];
-
     $uploadedFiles = $request->getUploadedFiles();
 
     $uploadedFile = $uploadedFiles['image'];
@@ -78,14 +75,10 @@ class RoleController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name');
-    }
     $prepare = $this->db->prepare(
-      "INSERT INTO category (`name`, `image`, `date_created`) VALUES (:name, :image, NOW())"
+      "INSERT INTO images (`image`, `date_created`) VALUES (:image, NOW())"
     );
     $result  = $prepare->execute([
-                                   'name'  => $name,
                                    'image' => $this->getBaseURL() . "/src/uploads/" . $filename
                                  ]);
     return $result ? $this->handleRequest($response, 201, "Datos registrados") : $this->handleRequest($response, 500);
@@ -94,7 +87,6 @@ class RoleController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $idcategory   = $request_body['idcategory'];
-    $name         = $request_body['name'];
 
     $uploadedFiles = $request->getUploadedFiles();
 
@@ -106,17 +98,12 @@ class RoleController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name');
-    }
-
     $prepare = $this->db->prepare(
-      "UPDATE category SET name = :name, image = :image WHERE idcategory = :idcategory"
+      "UPDATE category SET image = :image WHERE idcategory = :idcategory"
     );
 
     $result = $prepare->execute([
                                   'idcategory' => $idcategory,
-                                  'name'       => $name,
                                   'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
                                 ]);
     return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
@@ -124,20 +111,20 @@ class RoleController extends HandleRequest {
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idcategory    = $request_body['idcategory'];
+    $idimages    = $request_body['idimages'];
 
-    if (!isset($idcategory)) {
-      return $this->handleRequest($response, 400, 'Missing fields idcategory');
+    if (!isset($idimages)) {
+      return $this->handleRequest($response, 400, 'Missing fields idimages');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM category WHERE $idcategory = :idcategory AND active != '0'");
-    $statement->execute(['idcategory' => $idcategory]);
+    $statement = $this->db->prepare("SELECT * FROM images WHERE $idimages = :idimages AND active != '0'");
+    $statement->execute(['idimages' => $idimages]);
     $result = $statement->fetch();
     if (is_array($result)) {
       $prepare = $this->db->prepare(
-        "UPDATE category SET active = :active WHERE idcategory = :idcategory"
+        "UPDATE images SET active = :active WHERE idimages = :idimages"
       );
-      $result = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
+      $result = $prepare->execute(['idimages' => $idimages, 'active' => 0]);
       return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
     } else {
       return $this->handleRequest($response, 404, "id not found");

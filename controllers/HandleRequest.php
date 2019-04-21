@@ -9,6 +9,7 @@
 namespace App\Controller;
 
 require_once '../utils/Utils.php';
+
 use App\Utils\Utils;
 use Psr\Http\Message\ResponseInterface as Response;
 
@@ -23,96 +24,90 @@ class HandleRequest extends Utils {
 
   /**
    * @param Response $res
-   * @param int      $statusCode
+   * @param int      $status
    * @param string   $body
    * @param string   $message
    * @return array
    */
-  public function handleRequest(Response $res, $statusCode, $message = "", $body = "") {
-    if ($statusCode === 200) {
-      $res->withAddedHeader('Access-Control-Allow-Origin', '*');
+  public function handleRequest(Response $res, $status, $message = '', $body = '') {
+    if ($status === 200) {
       return $res->withJson([
-                              'statusCode' => 200,
-                              'message'    => $message ?: 'Success',
-                              'data'       => $body,
-                              'error'      => false
+                              'status'  => 200,
+                              'data'    => $body,
+                              'message' => $message ?: 'Success',
                             ], 200);
 
-    } else if ($statusCode === 201) {
+    } else if ($status === 201) {
       return $res->withJson([
-                              'statusCode' => 201,
-                              'message'    => $message ?: 'Success',
-                              'error'      => false
+                              'status'  => 201,
+                              'message' => $message ?: 'Success',
                             ], 201);
 
-    } else if ($statusCode === 202) {
+    } else if ($status === 201 && $body !== '') {
       return $res->withJson([
-                              'statusCode' => 202,
-                              'message'    => $message ?: 'Success',
-                              'error'      => false
+                              'status'  => 201,
+                              'data'    => $body,
+                              'message' => $message ?: 'Success',
+                            ], 201);
+
+    } else if ($status === 202) {
+      return $res->withJson([
+                              'status'  => 202,
+                              'message' => $message ?: 'Success',
                             ], 202);
 
-    } else if ($statusCode === 203) {
+    } else if ($status === 203) {
       return $res->withJson([
-                              'statusCode' => 203,
-                              'message'    => $message ?: 'Success',
-                              'error'      => false
+                              'status'  => 203,
+                              'message' => $message ?: 'Success',
                             ], 203);
 
-    } else if ($statusCode === 204) {
+    } else if ($status === 204) {
       return $res->withJson([
-                              'statusCode' => 204,
-                              'message'    => $message ?: 'Success',
-                              'error'      => false
+                              'status'  => 204,
+                              'message' => $message ?: 'Sin datos',
                             ], 204);
 
-    } else if ($statusCode === 400) {
+    } else if ($status === 400) {
       return $res->withJson([
-                              'statusCode' => 400,
-                              'message'    => $message ?: 'Something went wrong',
-                              'error'      => true
+                              'status'  => 400,
+                              'message' => $message ?: 'Something went wrong',
                             ], 400);
 
-    } else if ($statusCode === 401) {
+    } else if ($status === 401) {
       return $res->withJson([
-                              'statusCode' => 401,
-                              'message'    => $message ?: 'Authorized',
-                              'error'      => true
+                              'status'  => 401,
+                              'message' => $message ?: 'Unauthorized',
                             ], 401);
 
-    } else if ($statusCode === 402) {
+    } else if ($status === 402) {
       return $res->withJson([
-                              'statusCode' => 402,
-                              'message'    => $message ?: 'Something went wrong',
-                              'error'      => true
+                              'status'  => 402,
+                              'message' => $message ?: 'Something went wrong',
                             ], 402);
 
-    } else if ($statusCode === 403) {
+    } else if ($status === 403) {
       return $res->withJson([
-                              'statusCode' => 403,
-                              'message'    => $message ?: 'Something went wrong',
-                              'error'      => true
+                              'status'  => 403,
+                              'message' => $message ?: 'Forbidden',
                             ], 403);
 
-    } else if ($statusCode === 404) {
+    } else if ($status === 404) {
       return $res->withJson([
-                              'statusCode' => 404,
-                              'message'    => $message ?: 'No found',
-                              'error'      => true
+                              'status'  => 404,
+                              'message' => $message ?: 'No found',
                             ], 404);
 
-    } else if ($statusCode === 500) {
+    } else if ($status === 500) {
       return $res->withJson([
-                              'statusCode' => 500,
-                              'message'    => $message ?: 'Something went wrong',
-                              'error'      => true
+                              'status'  => 500,
+                              'message' => $message ?: 'Something went wrong',
                             ], 500);
 
     } else {
       return [
-        'statusCode' => 'unknown',
-        'message'    => $message ?: 'Something went wrong',
-        'error'      => true
+        'status'  => 501,
+        'message' => $message ?: 'Something went wrong',
       ];
     }
   }

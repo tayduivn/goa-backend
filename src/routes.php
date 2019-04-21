@@ -23,20 +23,22 @@ $app->group('/api', function () use ($app) {
         return $target;
       }, []);
       return $response->withJson([
-                                   'statusCode' => 200,
                                    'message'    => 'Success',
+                                   'statusCode' => 200,
                                    'data'       => $routes,
                                    'error'      => false
                                  ], 200);
     });
 
-    $app->get('/users/forgot/{email}', 'App\Controller\UserController:forgot');
     $app->post('/users/login', 'App\Controller\UserController:login');
     $app->post('/users/register', 'App\Controller\UserController:register');
+    $app->post('/users/forgot', 'App\Controller\UserController:forgot');
 
     $app->get('/categories', 'App\Controller\CategoryController:getAll');
 
-    $app->get('/images', 'App\Controller\ImagesController:getAll');
+    $app->get('/images', 'App\Controller\ImageController:getAll');
+
+    $app->get('/reviews', 'App\Controller\ReviewController:getAll');
   });
 
   $app->get('/users', 'App\Controller\UserController:getAll');
@@ -54,6 +56,18 @@ $app->group('/api', function () use ($app) {
   $app->put('/products', 'App\Controller\ProductController:update');
   $app->delete('/products', 'App\Controller\ProductController:delete');
 
+  $app->post('/categories', 'App\Controller\CategoryController:register');
+  $app->put('/categories', 'App\Controller\CategoryController:update');
+  $app->delete('/categories', 'App\Controller\CategoryController:delete');
+
+  $app->post('/images', 'App\Controller\ImageController:register');
+  $app->put('/images', 'App\Controller\ImageController:update');
+  $app->delete('/images', 'App\Controller\ImageController:delete');
+
+  $app->post('/reviews', 'App\Controller\ReviewController:register');
+  $app->put('/reviews', 'App\Controller\ReviewController:update');
+  $app->delete('/reviews', 'App\Controller\ReviewController:delete');
+
   $app->get('/orders', 'App\Controller\OrderController:getAll');
   $app->post('/orders', 'App\Controller\OrderController:register');
   $app->put('/orders', 'App\Controller\OrderController:update');
@@ -62,14 +76,6 @@ $app->group('/api', function () use ($app) {
   $app->post('/carts', 'App\Controller\ContentController:register');
   $app->put('/carts', 'App\Controller\ContentController:update');
   $app->delete('/delete', 'App\Controller\ContentController:delete');
-
-  $app->post('/images', 'App\Controller\ImagesController:post');
-  $app->put('/images', 'App\Controller\ImagesController:update');
-  $app->delete('/images', 'App\Controller\ImagesController:delete');
-
-  $app->post('/categories', 'App\Controller\CategoryController:post');
-  $app->put('/categories', 'App\Controller\CategoryController:update');
-  $app->delete('/categories', 'App\Controller\CategoryController:delete');
 });
 
 // fallback for home page

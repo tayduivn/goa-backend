@@ -22,125 +22,83 @@ class CategoryController extends HandleRequest {
     $this->upload   = $container->get('upload_directory');
   }
 
-  public function getId(Request $request, Response $response, $args) {
-    $idcategory = (int)$args['id'];
-    if (empty($idcategory))
-      return $this->handleRequest($response, 400, 'Requerid id');
-
-    $statement = $this->db->prepare("SELECT * FROM category WHERE idcategory = :idcategory AND active != '0'");
-    $statement->execute(['idcategory' => $idcategory]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getDate(Request $request, Response $response, $args) {
-    $date = $args['date'];
-    if (empty($date))
-      return $this->handleRequest($response, 400, 'Requerid date');
-
-    $statement = $this->db->prepare("SELECT * FROM category WHERE date_created = :date AND active != '0'");
-    $statement->execute(['date' => $date]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM category WHERE active != '0'");
-    $statement->execute();
-    $result  = $statement->fetchAll();
-    $details = is_array($result) ? $result : [];
+    $id    = $request->getQueryParam('id');
+    $order = $request->getQueryParam('order', $default = 'ASC');
 
-    return $this->handleRequest($response, 200, '', $details);
+    if ($id !== null) {
+      $statement = $this->db->prepare("SELECT * FROM category WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT * FROM category WHERE active != '0'");
+      $statement->execute();
+    }
+    $result  = $statement->fetchAll();
+    if (is_array($result)) {
+      return $this->handleRequest($response, 200, '', $result);
+    } else {
+      return $this->handleRequest($response, 204, '', []);
+    }
   }
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $name         = $request_body['name'];
 
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
-    }
-
     if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name');
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
-    $prepare = $this->db->prepare(
-      "INSERT INTO category (`name`, `image`, `date_created`) VALUES (:name, :image, NOW())"
-    );
-    $result  = $prepare->execute([
-                                   'name'  => $name,
-                                   'image' => $this->getBaseURL() . "/src/uploads/" . $filename
-                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos registrados") : $this->handleRequest($response, 500);
+
+    $prepare = $this->db->prepare("INSERT INTO category (`name`) VALUES (:name)");
+    $result  = $prepare->execute(['name' => $name,]);
+    if ($result) {
+      return $this->handleRequest($response, 201, "Datos registrados");
+    } else {
+      return $this->handleRequest($response, 500);
+    }
   }
 
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idcategory   = $request_body['idcategory'];
+    $idcategory   = $request_body['id'];
     $name         = $request_body['name'];
 
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
-    }
-
     if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required name');
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE category SET name = :name, image = :image WHERE idcategory = :idcategory"
-    );
-
-    $result = $prepare->execute([
-                                  'idcategory' => $idcategory,
-                                  'name'       => $name,
-                                  'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+    $prepare = $this->db->prepare("UPDATE category SET name = :name WHERE id = :idcategory");
+    $result  = $prepare->execute(['idcategory' => $idcategory, 'name' => $name,]);
+    if ($result) {
+      return $this->handleRequest($response, 201, "Datos actualizados");
+    } else {
+      return $this->handleRequest($response, 500);
+    }
   }
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idcategory    = $request_body['idcategory'];
+    $idcategory   = $request_body['id'];
 
     if (!isset($idcategory)) {
-      return $this->handleRequest($response, 400, 'Missing fields idcategory');
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM category WHERE $idcategory = :idcategory AND active != '0'");
+    $statement = $this->db->prepare("SELECT * FROM category WHERE id = :idcategory AND active != '0'");
     $statement->execute(['idcategory' => $idcategory]);
     $result = $statement->fetch();
     if (is_array($result)) {
       $prepare = $this->db->prepare(
-        "UPDATE category SET active = :active WHERE idcategory = :idcategory"
+        "UPDATE category SET active = :active WHERE id = :idcategory"
       );
-      $result = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      $result  = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
+      if ($result) {
+        return $this->handleRequest($response, 201, "Datos eliminados");
+      } else {
+        return $this->handleRequest($response, 500);
+      }
     } else {
-      return $this->handleRequest($response, 404, "id not found");
+      return $this->handleRequest($response, 404, "Categoría no existe");
     }
   }
 

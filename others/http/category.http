@@ -1,32 +1,24 @@
-GET {{host}}/api/public/category/getID/1
+GET {{host}}/api/public/categories
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
 
-GET {{host}}/api/public/category/getAll
+GET {{host}}/api/public/categories?id=1
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 ###
 
-POST {{host}}/api/admin/category/register
-Content-Type: multipart/form-data; boundary=WebAppBoundary
+POST {{host}}/api/categories
+Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
---WebAppBoundary
-Content-Disposition: form-data; name="name"
-Content-Type: text/plain
-
-Category test
---WebAppBoundary
-Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
-Content-Type: image/jpeg
-
-< ./../image/fuki.jpeg
---WebAppBoundary--
+{
+  "name": "testing"
+}
 
 ###
 
-PUT {{host}}/api/admin/category/update
+PUT {{host}}/api/admin/categories/update
 Content-Type: application/x-www-form-urlencoded
 Authorization: Bearer {{auth_token}}
 
@@ -43,11 +35,11 @@ Content-Type: image/jpeg
 --WebAppBoundary--
 ###
 
-DELETE {{host}}/api/admin/category/delete
+DELETE {{host}}/api/admin/categories/delete
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "idcategory": "1"
+  "id": "1"
 }
 ###
