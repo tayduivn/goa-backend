@@ -22,47 +22,18 @@ class ImageController extends HandleRequest {
     $this->upload   = $container->get('upload_directory');
   }
 
-  public function getId(Request $request, Response $response, $args) {
-    $idimages = (int)$args['id'];
-    if (empty($idimages))
-      return $this->handleRequest($response, 400, 'Requerid id');
-
-    $statement = $this->db->prepare("SELECT * FROM images WHERE idimages = :idimages AND active != '0'");
-    $statement->execute(['idimages' => $idimages]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getDate(Request $request, Response $response, $args) {
-    $date = $args['date'];
-    if (empty($date))
-      return $this->handleRequest($response, 400, 'Requerid date');
-
-    $statement = $this->db->prepare("SELECT * FROM images WHERE date_created = :date AND active != '0'");
-    $statement->execute(['date' => $date]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM images WHERE active != '0'");
-    $statement->execute();
-    $result  = $statement->fetchAll();
-    $details = is_array($result) ? $result : [];
+    $id    = $request->getQueryParam('id');
+    $order = $request->getQueryParam('order', $default = 'ASC');
 
-    return $this->handleRequest($response, 200, '', $details);
+    if ($id !== null) {
+      $statement = $this->db->prepare("SELECT * FROM product_image WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT * FROM product_image WHERE active != '0'");
+      $statement->execute();
+    }
+    return $this->getSendResponse($response, $statement);
   }
 
   public function register(Request $request, Response $response, $args) {
@@ -75,18 +46,15 @@ class ImageController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    $prepare = $this->db->prepare(
-      "INSERT INTO images (`image`, `date_created`) VALUES (:image, NOW())"
-    );
-    $result  = $prepare->execute([
-                                   'image' => $this->getBaseURL() . "/src/uploads/" . $filename
-                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos registrados") : $this->handleRequest($response, 500);
+    $prepare = $this->db->prepare("INSERT INTO product_image (`image`) VALUES (:image)");
+    $result  = $prepare->execute(['image' => $this->getBaseURL() . "/src/uploads/" . $filename]);
+
+    return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idcategory   = $request_body['idcategory'];
+    $idimage   = $request_body['id'];
 
     $uploadedFiles = $request->getUploadedFiles();
 
@@ -98,34 +66,31 @@ class ImageController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE category SET image = :image WHERE idcategory = :idcategory"
-    );
-
+    $prepare = $this->db->prepare("UPDATE product_image SET image = :image WHERE id = :idimage");
     $result = $prepare->execute([
-                                  'idcategory' => $idcategory,
+                                  'idimage' => $idimage,
                                   'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idimages    = $request_body['idimages'];
+    $idimages     = $request_body['id'];
 
     if (!isset($idimages)) {
       return $this->handleRequest($response, 400, 'Missing fields idimages');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM images WHERE $idimages = :idimages AND active != '0'");
+    $statement = $this->db->prepare("SELECT * FROM product_image WHERE id = :idimages AND active != '0'");
     $statement->execute(['idimages' => $idimages]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE images SET active = :active WHERE idimages = :idimages"
-      );
-      $result = $prepare->execute(['idimages' => $idimages, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      $prepare = $this->db->prepare("UPDATE product_image SET active = :active WHERE id = :idimages");
+      $result  = $prepare->execute(['idimages' => $idimages, 'active' => 0]);
+
+      return $this->postSendResponse($response, $result, 'Datos Eliminados');
     } else {
       return $this->handleRequest($response, 404, "id not found");
     }

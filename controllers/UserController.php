@@ -214,23 +214,23 @@ class UserController extends HandleRequest {
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $iduser       = $request_body['iduser'];
+    $iduser       = $request_body['id'];
 
     if (!isset($iduser)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required iduser');
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM user WHERE iduser = :iduser AND active != '0'");
+    $statement = $this->db->prepare("SELECT * FROM user WHERE id = :iduser AND active != '0'");
     $statement->execute(['iduser' => $iduser]);
     $result = $statement->fetch();
     if (is_array($result)) {
       $prepare = $this->db->prepare(
-        "UPDATE user SET active = :active WHERE iduser = :iduser"
+        "UPDATE user SET active = :active WHERE id = :iduser"
       );
       $result  = $prepare->execute(['iduser' => $iduser, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {
-      return $this->handleRequest($response, 404, "id not found");
+      return $this->handleRequest($response, 404, "Información no encontrada");
     }
   }
 

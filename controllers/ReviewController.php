@@ -22,110 +22,87 @@ class ReviewController extends HandleRequest {
     $this->upload   = $container->get('upload_directory');
   }
 
-  public function getId(Request $request, Response $response, $args) {
-    $idimages = (int)$args['id'];
-    if (empty($idimages))
-      return $this->handleRequest($response, 400, 'Requerid id');
-
-    $statement = $this->db->prepare("SELECT * FROM images WHERE idimages = :idimages AND active != '0'");
-    $statement->execute(['idimages' => $idimages]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getDate(Request $request, Response $response, $args) {
-    $date = $args['date'];
-    if (empty($date))
-      return $this->handleRequest($response, 400, 'Requerid date');
-
-    $statement = $this->db->prepare("SELECT * FROM images WHERE date_created = :date AND active != '0'");
-    $statement->execute(['date' => $date]);
-    $result  = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function getAll(Request $request, Response $response, $args) {
-    $statement = $this->db->prepare("SELECT * FROM images WHERE active != '0'");
-    $statement->execute();
-    $result  = $statement->fetchAll();
-    $details = is_array($result) ? $result : [];
+    $id    = $request->getQueryParam('id');
+    $order = $request->getQueryParam('order', $default = 'ASC');
 
-    return $this->handleRequest($response, 200, '', $details);
+    if ($id !== null) {
+      $statement = $this->db->prepare("SELECT * FROM product_review WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT * FROM product_review WHERE active != '0'");
+      $statement->execute();
+    }
+    return $this->getSendResponse($response, $statement);
   }
 
   public function register(Request $request, Response $response, $args) {
-    $uploadedFiles = $request->getUploadedFiles();
+    $request_body = $request->getParsedBody();
+    $stars        = $request_body['stars'];
+    $message      = $request_body['message'];
+    $user_id      = $request_body['user_id'];
+    $product_id   = $request_body['product_id'];
 
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
+    if (!isset($message)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "INSERT INTO images (`image`, `date_created`) VALUES (:image, NOW())"
+    $prepare = $this->db->prepare("
+      INSERT INTO product_review (message, stars, user_id, product_id) 
+      VALUES (:message, :stars, :user_id, :product_id)"
     );
     $result  = $prepare->execute([
-                                   'image' => $this->getBaseURL() . "/src/uploads/" . $filename
+                                   'message'    => $message,
+                                   'stars'      => $stars,
+                                   'user_id'    => $user_id,
+                                   'product_id' => $product_id,
                                  ]);
-    return $result ? $this->handleRequest($response, 201, "Datos registrados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idcategory   = $request_body['idcategory'];
+    $id           = $request_body['id'];
+    $stars        = $request_body['stars'];
+    $message      = $request_body['message'];
+    $user_id      = $request_body['user_id'];
+    $product_id   = $request_body['product_id'];
 
-    $uploadedFiles = $request->getUploadedFiles();
-
-    $uploadedFile = $uploadedFiles['image'];
-    if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-      $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
-    } else {
-      return $this->handleRequest($response, 400, 'No upload image');
+    if (!isset($id) and !isset($stars) and !isset($message) and !isset($user_id) and !isset($product_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare(
-      "UPDATE category SET image = :image WHERE idcategory = :idcategory"
+      "UPDATE product_review SET stars = :stars, message = :message, user_id = :user_id, product_id = :product_id  WHERE id = :id"
     );
 
     $result = $prepare->execute([
-                                  'idcategory' => $idcategory,
-                                  'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
+                                  'id'         => $id,
+                                  'message'    => $message,
+                                  'stars'      => $stars,
+                                  'user_id'    => $user_id,
+                                  'product_id' => $product_id,
                                 ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+
+    return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idimages    = $request_body['idimages'];
+    $id     = $request_body['id'];
 
-    if (!isset($idimages)) {
-      return $this->handleRequest($response, 400, 'Missing fields idimages');
+    if (!isset($id)) {
+      return $this->handleRequest($response, 400, 'Missing fields id');
     }
 
-    $statement = $this->db->prepare("SELECT * FROM images WHERE $idimages = :idimages AND active != '0'");
-    $statement->execute(['idimages' => $idimages]);
+    $statement = $this->db->prepare("SELECT * FROM product_review WHERE id = :id AND active != '0'");
+    $statement->execute(['id' => $id]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE images SET active = :active WHERE idimages = :idimages"
-      );
-      $result = $prepare->execute(['idimages' => $idimages, 'active' => 0]);
-      return $result ? $this->handleRequest($response, 201, "Datos eliminados") : $this->handleRequest($response, 500);
+      $prepare = $this->db->prepare("UPDATE product_review SET active = :active WHERE id = :id");
+      $result  = $prepare->execute(['id' => $id, 'active' => 0]);
+      return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {
       return $this->handleRequest($response, 404, "id not found");
     }

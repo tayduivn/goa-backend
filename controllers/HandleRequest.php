@@ -16,10 +16,31 @@ use Psr\Http\Message\ResponseInterface as Response;
 class HandleRequest extends Utils {
 
   /**
-   * @return mixed
+   * @param Response $response
+   * @param          $statement
+   * @return array
    */
-  public function getSession() {
-    return new \SlimSession\Helper;
+  public function getSendResponse(Response $response, $statement) {
+    $result = $statement->fetchAll();
+    if (is_array($result)) {
+      return $this->handleRequest($response, 200, '', $result);
+    } else {
+      return $this->handleRequest($response, 204, '', []);
+    }
+  }
+
+  /**
+   * @param Response $response
+   * @param          $result
+   * @param          $message
+   * @return array
+   */
+  public function postSendResponse(Response $response, $result, $message = 'Datos registrados') {
+    if ($result) {
+      return $this->handleRequest($response, 201, $message);
+    } else {
+      return $this->handleRequest($response, 500);
+    }
   }
 
   /**

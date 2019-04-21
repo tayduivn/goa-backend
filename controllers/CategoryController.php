@@ -33,12 +33,7 @@ class CategoryController extends HandleRequest {
       $statement = $this->db->prepare("SELECT * FROM category WHERE active != '0'");
       $statement->execute();
     }
-    $result  = $statement->fetchAll();
-    if (is_array($result)) {
-      return $this->handleRequest($response, 200, '', $result);
-    } else {
-      return $this->handleRequest($response, 204, '', []);
-    }
+    return $this->getSendResponse($response, $statement);
   }
 
   public function register(Request $request, Response $response, $args) {
@@ -51,11 +46,8 @@ class CategoryController extends HandleRequest {
 
     $prepare = $this->db->prepare("INSERT INTO category (`name`) VALUES (:name)");
     $result  = $prepare->execute(['name' => $name,]);
-    if ($result) {
-      return $this->handleRequest($response, 201, "Datos registrados");
-    } else {
-      return $this->handleRequest($response, 500);
-    }
+
+    return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
@@ -69,11 +61,8 @@ class CategoryController extends HandleRequest {
 
     $prepare = $this->db->prepare("UPDATE category SET name = :name WHERE id = :idcategory");
     $result  = $prepare->execute(['idcategory' => $idcategory, 'name' => $name,]);
-    if ($result) {
-      return $this->handleRequest($response, 201, "Datos actualizados");
-    } else {
-      return $this->handleRequest($response, 500);
-    }
+
+    return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
 
   public function delete(Request $request, Response $response, $args) {
@@ -92,11 +81,8 @@ class CategoryController extends HandleRequest {
         "UPDATE category SET active = :active WHERE id = :idcategory"
       );
       $result  = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
-      if ($result) {
-        return $this->handleRequest($response, 201, "Datos eliminados");
-      } else {
-        return $this->handleRequest($response, 500);
-      }
+
+      return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {
       return $this->handleRequest($response, 404, "Categoría no existe");
     }
