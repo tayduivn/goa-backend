@@ -1,64 +1,58 @@
-GET {{host}}/api/public/object/getID/1
+GET {{host}}/api/products?id=1
 Accept: application/json
 Authorization: Bearer {{auth_token}}
+
 ###
 
-GET {{host}}/api/public/object/getAll
+GET {{host}}/api/products?order=DESC
 Accept: application/json
 Authorization: Bearer {{auth_token}}
-###
-
-POST {{host}}/api/admin/object/register
-Content-Type: multipart/form-data; boundary=WebAppBoundary
-Authorization: Bearer {{auth_token}}
-
---WebAppBoundary
-Content-Disposition: form-data; name="name"
-Content-Type: text/plain
-
-Category test
---WebAppBoundary
-Content-Disposition: form-data; name="service_idservice"
-Content-Type: text/plain
-
-3
---WebAppBoundary
-Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
-Content-Type: image/jpeg
-
-< ./../image/fuki.jpeg
---WebAppBoundary--
 
 ###
 
-POST {{host}}/api/admin/object/update
-Content-Type: multipart/form-data; boundary=WebAppBoundary
-Authorization: Bearer {{auth_token}}
-
---WebAppBoundary
-Content-Disposition: form-data; name="idobject"
-Content-Type: text/plain
-
-1
-
---WebAppBoundary
-Content-Disposition: form-data; name="name"
-Content-Type: text/plain
-
-Category test
---WebAppBoundary
-Content-Disposition: form-data; name="image"; filename="fuki.jpeg"
-Content-Type: image/jpeg
-
-< ./../image/fuki.jpeg
---WebAppBoundary--
-###
-
-DELETE {{host}}/api/admin/object/delete
+POST {{host}}/api/products
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "idobject": "1"
+  "sku": "17",
+  "name": "13456",
+  "description_short": "Valencia",
+  "description_one": "Hola 11",
+  "description_two": "Hola 22",
+  "preparation": "preparación",
+  "regular_price": "321312",
+  "quantity": "23",
+  "user_id": "1"
 }
+
+###
+
+PUT {{host}}/api/products
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "id": "17",
+  "sku": "17",
+  "name": "13456",
+  "description_short": "Valencia",
+  "description_one": "04125456465",
+  "description_two": "Administrador",
+  "preparation": "Administrador",
+  "regular_price": "Administrador",
+  "quantity": "Administrador",
+  "user_id": "Administrador"
+}
+
+###
+
+DELETE {{host}}/api/products/delete
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "idproducts": "1"
+}
+
 ###

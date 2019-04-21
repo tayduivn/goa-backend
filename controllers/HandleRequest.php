@@ -18,14 +18,15 @@ class HandleRequest extends Utils {
   /**
    * @param Response $response
    * @param          $statement
+   * @param string   $message
    * @return array
    */
-  public function getSendResponse(Response $response, $statement) {
+  public function getSendResponse(Response $response, $statement, $message = '') {
     $result = $statement->fetchAll();
     if (is_array($result)) {
-      return $this->handleRequest($response, 200, '', $result);
+      return $this->handleRequest($response, 200, $message, $result);
     } else {
-      return $this->handleRequest($response, 204, '', []);
+      return $this->handleRequest($response, 204, $message, []);
     }
   }
 

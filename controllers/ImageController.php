@@ -37,6 +37,9 @@ class ImageController extends HandleRequest {
   }
 
   public function register(Request $request, Response $response, $args) {
+    $request_body = $request->getParsedBody();
+    $product_id   = $request_body['product_id'];
+
     $uploadedFiles = $request->getUploadedFiles();
 
     $uploadedFile = $uploadedFiles['image'];
@@ -46,15 +49,23 @@ class ImageController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    $prepare = $this->db->prepare("INSERT INTO product_image (`image`) VALUES (:image)");
-    $result  = $prepare->execute(['image' => $this->getBaseURL() . "/src/uploads/" . $filename]);
+    if (!isset($product_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
+    }
+
+    $prepare = $this->db->prepare("INSERT INTO product_image (`image`, `product_id`) VALUES (:image, :product_id)");
+    $result  = $prepare->execute([
+                                   'product_id' => $product_id,
+                                   'image'      => $this->getBaseURL() . "/src/uploads/" . $filename
+                                 ]);
 
     return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $idimage   = $request_body['id'];
+    $idimage      = $request_body['id'];
+    $product_id   = $request_body['product_id'];
 
     $uploadedFiles = $request->getUploadedFiles();
 
@@ -66,11 +77,18 @@ class ImageController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    $prepare = $this->db->prepare("UPDATE product_image SET image = :image WHERE id = :idimage");
-    $result = $prepare->execute([
-                                  'idimage' => $idimage,
-                                  'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
-                                ]);
+    if (!isset($idimage) and !isset($product_id)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
+    }
+
+    $prepare = $this->db->prepare("
+      UPDATE product_image SET image = :image, product_id = :product_id WHERE id = :idimage
+    ");
+    $result  = $prepare->execute([
+                                   'idimage'    => $idimage,
+                                   'product_id' => $product_id,
+                                   'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
+                                 ]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }

@@ -60,8 +60,8 @@ $app->group('/api', function () use ($app) {
   $app->put('/categories', 'App\Controller\CategoryController:update');
   $app->delete('/categories', 'App\Controller\CategoryController:delete');
 
-  $app->post('/images', 'App\Controller\ImageController:register');
-  $app->put('/images', 'App\Controller\ImageController:update');
+  $app->post('/images/register', 'App\Controller\ImageController:register');
+  $app->post('/images/update', 'App\Controller\ImageController:update');
   $app->delete('/images', 'App\Controller\ImageController:delete');
 
   $app->post('/reviews', 'App\Controller\ReviewController:register');

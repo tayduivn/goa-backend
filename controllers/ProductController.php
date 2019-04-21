@@ -23,15 +23,21 @@ class ProductController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $id    = $request->getQueryParam('id');
-    $order = $request->getQueryParam('order', $default = 'ASC');
+    $id        = $request->getQueryParam('id');
+    $order     = $request->getQueryParam('order', $default = 'ASC');
+    $limit     = $request->getQueryParam('limit', $default = '1');
+    $isShopped = $request->getQueryParam('isShopped', $default = '1');
 
-    if ($id !== null) {
-      $statement = $this->db->prepare("SELECT * FROM product WHERE id = :id AND active != '0' ORDER BY " . $order);
-      $statement->execute(['id' => $id]);
+    if ($id !== null && $isShopped !== null) {
+      $statement = $this->db->prepare("SELECT * 
+                                        FROM product  
+                                        WHERE product.id = :id AND product.active != '0' ORDER BY :order");
+      $statement->execute(['id' => $id, 'order' => $order]);
     } else {
-      $statement = $this->db->prepare("SELECT * FROM product WHERE active != '0'");
-      $statement->execute();
+      $statement = $this->db->prepare("SELECT * 
+                                        FROM product 
+                                        WHERE product.active != '0' ORDER BY product.id ASC");
+      $statement->execute(['order' => $order]);
     }
     return $this->getSendResponse($response, $statement);
   }
