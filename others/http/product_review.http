@@ -1,49 +1,44 @@
-GET {{host}}/api/transportservice/getID/4
+GET {{host}}/api/public/reviews?id=1
 Accept: application/json
 Authorization: Bearer {{auth_token}}
-###
 
-GET {{host}}/api/transportservice/getAll
+###
+GET {{host}}/api/public/reviews
 Accept: application/json
 Authorization: Bearer {{auth_token}}
-###
 
-POST {{host}}/api/transportservice/register
+###
+POST {{host}}/api/reviews
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "name_service": "Maracay",
-  "size": "Valencia",
-  "distance": "2019/03/18",
-  "weight": "2019/03/28",
-  "date_created": "Hola",
-  "prom_price": "20154",
-  "transport_idtransport": "2019/03/18"
+  "message": "Hola producto",
+  "stars": 4,
+  "user_id": 1,
+  "product_id": 2
 }
-###
 
-PUT {{host}}/api/transportservice/update
+###
+PUT {{host}}/api/reviews
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "idtransport_service": "4",
-  "name_service": "Maracay",
-  "size": "Valencia",
-  "distance": "2019/03/18",
-  "weight": "2019/03/28",
-  "date_created": "Hola",
-  "prom_price": "20154",
-  "transport_idtransport": "2019/03/18"
+  "id": 1,
+  "message": "Hola producto",
+  "stars": 5,
+  "user_id": 1,
+  "product_id": 1
 }
-###
 
-DELETE {{host}}/api/transportservice/delete
+###
+DELETE {{host}}/api/reviews
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "idtransport_service": "4"
+  "id": "4"
 }
+
 ###
