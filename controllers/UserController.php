@@ -22,10 +22,10 @@ class UserController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $order   = $request->getQueryParam('order', $default = 'ASC');
-    $limit   = $request->getQueryParam('limit', $default = '-1');
-    $type    = $request->getQueryParam('type', $default = 'all');
-    $id      = $request->getQueryParam('id', $default = false);
+    $order = $request->getQueryParam('order', $default = 'ASC');
+    $limit = $request->getQueryParam('limit', $default = '-1');
+    $type  = $request->getQueryParam('type', $default = 'all');
+    $id    = $request->getQueryParam('id', $default = false);
 
     if ($type !== 'all') {
       $statement = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
@@ -96,7 +96,7 @@ class UserController extends HandleRequest {
     }
 
     if ($this->validateUser($email)) {
-      return $this->handleRequest($response, 400, "Email ya registrado");
+      return $this->handleRequest($response, 409, "Email ya registrado");
     } else {
       $prepare = $this->db->prepare(
         "INSERT INTO user (`password`, `email`, `address`, `phone`, `role_id`, `first_name`, `last_name`, `message`) 
@@ -140,45 +140,43 @@ class UserController extends HandleRequest {
   }
 
   public function update(Request $request, Response $response, $args) {
-    $request_body     = $request->getParsedBody();
-    $iduser           = $request_body['iduser'];
-    $street           = $request_body['street'];
-    $phone            = $request_body['phone'];
-    $type             = $request_body['type'];
-    $person_name      = isset($request_body['person_name']) ? $request_body['person_name'] : '';
-    $person_last_name = isset($request_body['person_last_name']) ? $request_body['person_last_name'] : '';
+    $request_body = $request->getParsedBody();
+    $id           = $request_body['id'];
+    $address      = $request_body['address'];
+    $phone        = $request_body['phone'];
+    $message      = $request_body['message'];
+    $role_id      = $request_body['role_id'];
+    $first_name   = isset($request_body['first_name']) ? $request_body['first_name'] : '';
+    $last_name    = isset($request_body['last_name']) ? $request_body['last_name'] : '';
 
-    if (!isset($iduser) && !isset($street) && !isset($phone) && !isset($type)) {
+    if (!isset($email) && !isset($address) && !isset($phone) && !isset($role_id) && !isset($message)) {
       return $this->handleRequest($response, 400, 'Invalid request. Required iduser, street, phone, type');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE user SET  street = :street, phone = :phone, type = :type, person_name = :person_name, person_last_name = :person_last_name 
-        WHERE iduser = :iduser"
-    );
-
-    $result = $prepare->execute([
-                                  'iduser'           => $iduser,
-                                  'street'           => $street,
-                                  'phone'            => $phone,
-                                  'type'             => $type,
-                                  'person_name'      => $person_name,
-                                  'person_last_name' => $person_last_name,
-                                ]);
+    $query   = "UPDATE user SET  first_name = :first_name, last_name = :last_name, address = :address, 
+                phone = :phone, message = :message, role_id = :role_id  WHERE id = :id";
+    $prepare = $this->db->prepare($query);
+    $result  = $prepare->execute([
+                                   'id'         => $id,
+                                   'first_name' => $first_name,
+                                   'last_name'  => $last_name,
+                                   'address'    => $address,
+                                   'phone'      => $phone,
+                                   'message'    => $message,
+                                   'role_id'    => $role_id,
+                                 ]);
     return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
   }
 
   public function updatePassword(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $iduser       = $request_body['iduser'];
+    $id           = $request_body['id'];
     $password     = $request_body['password'];
     $newPassword  = $request_body['newPassword'];
     $email        = $request_body['email'];
 
-    $sql       = "SELECT * FROM user WHERE email= :email";
-    $statement = $this->db->prepare($sql);
-    $statement->bindParam("email", $email);
-    $statement->execute();
+    $statement = $this->db->prepare("SELECT * FROM user WHERE email= :email");
+    $statement->execute(["email", $email]);
     $user = $statement->fetchObject();
 
     if (!$user) {
@@ -189,16 +187,13 @@ class UserController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Contraseña incorrecta');
     }
 
-    if (!isset($iduser) && !isset($password)) {
-      return $this->handleRequest($response, 400, 'Invalid request. Required iduser, password');
+    if (!isset($id) && !isset($password)) {
+      return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE user SET  password = :password WHERE iduser = :iduser"
-    );
-
+    $prepare = $this->db->prepare("UPDATE user SET  password = :password WHERE id = :id");
     $result = $prepare->execute([
-                                  'iduser'   => $iduser,
+                                  'id'       => $id,
                                   'password' => password_hash($newPassword, PASSWORD_BCRYPT),
                                 ]);
     return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);

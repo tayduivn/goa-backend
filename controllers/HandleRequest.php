@@ -120,6 +120,13 @@ class HandleRequest extends Utils {
                               'message' => $message ?: 'No found',
                             ], 404);
 
+
+    } else if ($status === 409) {
+      return $res->withJson([
+                              'status'  => 409,
+                              'message' => $message ?: 'Conflict',
+                            ], 409);
+
     } else if ($status === 500) {
       return $res->withJson([
                               'status'  => 500,
@@ -127,10 +134,10 @@ class HandleRequest extends Utils {
                             ], 500);
 
     } else {
-      return [
-        'status'  => 501,
-        'message' => $message ?: 'Something went wrong',
-      ];
+      return $res->withJson([
+                              'status'  => 501,
+                              'message' => $message ?: 'Something went wrong',
+                            ], 500);
     }
   }
 }

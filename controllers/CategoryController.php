@@ -44,8 +44,12 @@ class CategoryController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare("INSERT INTO category (`name`) VALUES (:name)");
-    $result  = $prepare->execute(['name' => $name,]);
+    if ($this->checkCategoryName($name)) {
+      $prepare = $this->db->prepare("INSERT INTO category (`name`) VALUES (:name)");
+      $result  = $prepare->execute(['name' => $name,]);
+    } else {
+      return $this->handleRequest($response, 409, 'Ya se encuentra ese nombre');
+    }
 
     return $this->postSendResponse($response, $result, 'Datos registrados');
   }
@@ -59,8 +63,12 @@ class CategoryController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare("UPDATE category SET name = :name WHERE id = :idcategory");
-    $result  = $prepare->execute(['idcategory' => $idcategory, 'name' => $name,]);
+    if ($this->checkCategoryName($name)) {
+      $prepare = $this->db->prepare("UPDATE category SET name = :name WHERE id = :idcategory");
+      $result  = $prepare->execute(['idcategory' => $idcategory, 'name' => $name,]);
+    } else {
+      return $this->handleRequest($response, 409, 'Ya se encuentra ese nombre');
+    }
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
@@ -86,6 +94,16 @@ class CategoryController extends HandleRequest {
     } else {
       return $this->handleRequest($response, 404, "Categoría no existe");
     }
+  }
+
+  /**
+   * @param $name
+   * @return mixed
+   */
+  public function checkCategoryName($name) {
+    $statement = $this->db->prepare("SELECT name FROM category WHERE name = :name AND id != 0");
+    $statement->execute(['name' => $name]);
+    return empty($statement->fetchAll());
   }
 
 }

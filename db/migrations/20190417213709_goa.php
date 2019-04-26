@@ -46,7 +46,6 @@ class Goa extends AbstractMigration {
       ->addColumn('password', 'string', ['limit' => 255])
       ->addColumn('address', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('phone', 'string', ['limit' => 255, 'null' => true])
-      ->addColumn('message', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('role_id', 'integer')
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])

@@ -27,10 +27,21 @@ class ReviewController extends HandleRequest {
     $order = $request->getQueryParam('order', $default = 'ASC');
 
     if ($id !== null) {
-      $statement = $this->db->prepare("SELECT * FROM product_review WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $query     = "SELECT * FROM product_review INNER JOIN user u on product_review.user_id = u.id
+                    INNER JOIN product p on product_review.product_id = p.id WHERE product_review.active != '0'";
+      $statement = $this->db->prepare($query . $order);
       $statement->execute(['id' => $id]);
     } else {
-      $statement = $this->db->prepare("SELECT * FROM product_review WHERE active != '0'");
+      $query     = "SELECT product_review.id AS review_id, product_review.message, product_review.stars, 
+                    product_review.active, product_review.inserted_at AS review_inserted_at, 
+                    product_review.updated_at AS review_updated_at, product_review.user_id, product_review.product_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
+                    u.inserted_at, u.updated_at, 
+                    p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, 
+                    p.preparation, p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id 
+                    FROM product_review INNER JOIN user u on product_review.user_id = u.id
+                    INNER JOIN product p on product_review.product_id = p.id WHERE product_review.active != '0'";
+      $statement = $this->db->prepare($query);
       $statement->execute();
     }
     return $this->getSendResponse($response, $statement);
@@ -90,7 +101,7 @@ class ReviewController extends HandleRequest {
 
   public function delete(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $id     = $request_body['id'];
+    $id           = $request_body['id'];
 
     if (!isset($id)) {
       return $this->handleRequest($response, 400, 'Missing fields id');
