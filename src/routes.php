@@ -76,10 +76,10 @@ $app->group('/api', function () use ($app) {
   $app->post('/orders', 'App\Controller\OrderController:register');
   $app->put('/orders', 'App\Controller\OrderController:update');
 
-  $app->get('/carts', 'App\Controller\ContentController:getAll');
-  $app->post('/carts', 'App\Controller\ContentController:register');
-  $app->put('/carts', 'App\Controller\ContentController:update');
-  $app->delete('/carts', 'App\Controller\ContentController:delete');
+  $app->get('/carts', 'App\Controller\CartController:getAll');
+  $app->post('/carts', 'App\Controller\CartController:register');
+  $app->put('/carts', 'App\Controller\CartController:update');
+  $app->delete('/carts', 'App\Controller\CartController:delete');
 });
 
 // fallback for home page
