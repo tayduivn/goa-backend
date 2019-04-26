@@ -25,6 +25,19 @@ class Goa extends AbstractMigration {
    * with the Table class.
    */
   public function change() {
+    $this->tableRole();
+    $this->tableUser();
+    $this->tableProduct();
+    $this->tableProductImage();
+    $this->tableProductReview();
+    $this->tableCart();
+    $this->tableOrder();
+    $this->tableTransaction();
+    $this->tableCategory();
+    $this->tableProductCategory();
+  }
+
+  public function tableRole() {
     if ($this->hasTable('role')) {
       $this->table('role')->drop()->save();
     }
@@ -35,10 +48,12 @@ class Goa extends AbstractMigration {
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addIndex(['name'], ['unique' => true])
       ->save();
+  }
 
+  public function tableUser() {
     /*if ($this->hasTable('user')) {
-      $this->table('user')->drop()->save();
-    }*/
+          $this->table('user')->drop()->save();
+        }*/
     $this->table('user')
       ->addColumn('email', 'string', ['limit' => 255])
       ->addColumn('first_name', 'string', ['limit' => 255])
@@ -53,10 +68,12 @@ class Goa extends AbstractMigration {
       ->addIndex(['email'], ['unique' => true])
       ->addForeignKey('role_id', 'role', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableProduct() {
     /*if ($this->hasTable('product')) {
-      $this->table('product')->drop()->save();
-    }*/
+          $this->table('product')->drop()->save();
+        }*/
     $this->table('product')
       ->addColumn('sku', 'string', ['limit' => 255])
       ->addColumn('name', 'string', ['limit' => 255])
@@ -73,10 +90,12 @@ class Goa extends AbstractMigration {
       ->addIndex(['name'], ['unique' => true])
       ->addForeignKey('user_id', 'user', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableProductImage() {
     /*if ($this->hasTable('product_image')) {
-      $this->table('product_image')->drop()->save();
-    }*/
+          $this->table('product_image')->drop()->save();
+        }*/
     $this->table('product_image')
       ->addColumn('image', 'string')
       ->addColumn('active', 'boolean', ['default' => true])
@@ -85,10 +104,12 @@ class Goa extends AbstractMigration {
       ->addColumn('product_id', 'integer')
       ->addForeignKey('product_id', 'product', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableProductReview() {
     /*if ($this->hasTable('product_review')) {
-      $this->table('product_review')->drop()->save();
-    }*/
+          $this->table('product_review')->drop()->save();
+        }*/
     $this->table('product_review')
       ->addColumn('message', 'string', ['limit' => 255])
       ->addColumn('stars', 'integer', ['limit' => 1])
@@ -100,10 +121,12 @@ class Goa extends AbstractMigration {
       ->addForeignKey('user_id', 'user', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->addForeignKey('product_id', 'product', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableCart() {
     /*if ($this->hasTable('cart')) {
-      $this->table('cart')->drop()->save();
-    }*/
+          $this->table('cart')->drop()->save();
+        }*/
     $this->table('cart')
       ->addColumn('price', 'decimal')
       ->addColumn('quantity', 'integer')
@@ -115,13 +138,19 @@ class Goa extends AbstractMigration {
       ->addForeignKey('user_id', 'user', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->addForeignKey('product_id', 'product', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  /**
+   * status: 'Nuevo', 'Enviando', 'Completado', 'Cancelado'
+   */
+  public function tableOrder() {
     /*if ($this->hasTable('order')) {
-      $this->table('order')->drop()->save();
-    }*/
+          $this->table('order')->drop()->save();
+        }*/
     $this->table('order')
       ->addColumn('subtotal', 'decimal')
       ->addColumn('total', 'decimal')
+      ->addColumn('status', 'enum', ['values' => ['Nuevo', 'Enviando', 'Completado', 'Cancelado'], 'default' => 'Nuevo'])
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
@@ -131,10 +160,12 @@ class Goa extends AbstractMigration {
       ->addForeignKey('user_id', 'user', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->addForeignKey('cart_id', 'cart', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableTransaction() {
     /*if ($this->hasTable('transaction')) {
-      $this->table('transaction')->drop()->save();
-    }*/
+          $this->table('transaction')->drop()->save();
+        }*/
     $this->table('transaction')
       ->addColumn('code', 'string', ['limit' => 255])
       ->addColumn('processor', 'string', ['limit' => 255])
@@ -150,20 +181,24 @@ class Goa extends AbstractMigration {
       ->addIndex(['id', 'code'], ['unique' => true])
       ->addForeignKey('order_id', 'order', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
+  }
 
+  public function tableCategory() {
     /*if ($this->hasTable('category')) {
-      $this->table('category')->drop()->save();
-    }*/
+          $this->table('category')->drop()->save();
+        }*/
     $this->table('category')
       ->addColumn('name', 'string', ['limit' => 255])
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->save();
+  }
 
+  public function tableProductCategory() {
     /*if ($this->hasTable('product_category')) {
-      $this->table('product_category')->drop()->save();
-    }*/
+          $this->table('product_category')->drop()->save();
+        }*/
     $this->table('product_category')
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])

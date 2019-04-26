@@ -23,15 +23,44 @@ class OrderController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $id    = $request->getQueryParam('id');
-    $order = $request->getQueryParam('order', $default = 'ASC');
+    $id     = $request->getQueryParam('id');
+    $order  = $request->getQueryParam('order', $default = 'ASC');
+    $userId = $request->getQueryParam('userId');
+    $cartId = $request->getQueryParam('cartId');
+    $status = $request->getQueryParam('status', $default = 'Nuevo');
 
     if ($id !== null) {
-      $statement = $this->db->prepare("SELECT * FROM `order` WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $query     = "SELECT * FROM `order` WHERE id = :id AND active != '0' ORDER BY inserted_at ASC";
+      $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
+
+    } elseif ($userId !== null && $cartId === null) {
+      $query     = "SELECT * 
+                    FROM `order`
+                    WHERE `order`.active != '0' AND user_id = :userId AND status = :status";
+      $statement = $this->db->prepare($query);
+      $statement->execute(['status' => $status, 'userId' => $userId]);
+
+    } elseif ($userId !== null && $cartId !== null) {
+      $query     = "SELECT `order`.id, `order`.subtotal, `order`.total, `order`.active, `order`.status, `order`.updated_at AS order_updated_at, 
+                    `order`.user_id, `order`.cart_id, `order`.inserted_at AS order_inserted_at, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
+                    u.inserted_at, u.updated_at, 
+                    c.id, c.price, c.quantity, c.active, c.inserted_at, c.updated_at, c.user_id, c.product_id, 
+                    p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
+                    p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id 
+                    FROM `order` INNER JOIN user u on `order`.user_id = u.id INNER JOIN cart c on `order`.cart_id = c.id
+                    INNER JOIN product p on c.product_id = p.id
+                    WHERE `order`.active != '0' AND `order`.user_id = :userId AND cart_id = :cartId";
+      $statement = $this->db->prepare($query);
+      $statement->execute(['userId' => $userId, 'cartId' => $cartId]);
+
     } else {
-      $statement = $this->db->prepare("SELECT * FROM `order` WHERE active != '0'");
-      $statement->execute();
+      $query     = "SELECT * 
+                    FROM `order`
+                    WHERE `order`.active != '0' AND status = :status";
+      $statement = $this->db->prepare($query);
+      $statement->execute(['status' => $status]);
     }
     return $this->getSendResponse($response, $statement);
   }

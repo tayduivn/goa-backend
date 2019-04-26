@@ -30,7 +30,7 @@ class CartController extends HandleRequest {
 
     if ($id !== null) {
       $query     = "SELECT * FROM cart WHERE id = :id AND active != '0' ORDER BY cart.inserted_at ASC";
-      $statement = $this->db->prepare($query . $order);
+      $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
     } else if ($userId) {
       $query     = "SELECT cart.id AS cart_id, cart.price, cart.quantity AS cart_quantity, cart.active, cart.inserted_at, cart.updated_at, 
