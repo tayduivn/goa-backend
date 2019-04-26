@@ -27,10 +27,19 @@ class CartController extends HandleRequest {
     $order = $request->getQueryParam('order', $default = 'ASC');
 
     if ($id !== null) {
-      $statement = $this->db->prepare("SELECT * FROM cart WHERE id = :id AND active != '0' ORDER BY " . $order);
+      $query     = "SELECT * FROM cart WHERE id = :id AND active != '0' ORDER BY cart.inserted_at ASC";
+      $statement = $this->db->prepare($query . $order);
       $statement->execute(['id' => $id]);
     } else {
-      $statement = $this->db->prepare("SELECT * FROM cart WHERE active != '0'");
+      $query     = "SELECT cart.id, cart.price, cart.quantity, cart.active, cart.inserted_at, cart.updated_at, 
+                    cart.user_id, cart.product_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
+                    u.inserted_at, u.updated_at, 
+                    p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
+                    p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
+                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN product p on cart.product_id = p.id
+                    WHERE cart.active != '0'";
+      $statement = $this->db->prepare($query);
       $statement->execute();
     }
     return $this->getSendResponse($response, $statement);
@@ -46,10 +55,9 @@ class CartController extends HandleRequest {
     if (!isset($price) && !isset($quantity)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
-    $prepare = $this->db->prepare(
-      "INSERT INTO cart (`price`, `quantity`, `user_id`, `product_id`) 
-                    VALUES (:price, :quantity, :user_id, :product_id)"
-    );
+    $query   = "INSERT INTO cart (`price`, `quantity`, `user_id`, `product_id`) 
+                VALUES (:price, :quantity, :user_id, :product_id)";
+    $prepare = $this->db->prepare($query);
     $result  = $prepare->execute([
                                    'price'      => $price,
                                    'quantity'   => $quantity,
