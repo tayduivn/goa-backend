@@ -65,28 +65,25 @@ class ImageController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $idimage      = $request_body['id'];
-    $product_id   = $request_body['product_id'];
 
     $uploadedFiles = $request->getUploadedFiles();
 
     $uploadedFile = $uploadedFiles['image'];
     if (isset($uploadedFile) && $uploadedFile !== null && $uploadedFile->getError() === UPLOAD_ERR_OK) {
       $filename = $this->moveUploadedFile($this->upload, $uploadedFile);
-      $response->write('uploaded ' . $filename . '<br/>');
     } else {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    if (!isset($idimage) and !isset($product_id)) {
+    if (!isset($idimage)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare("
-      UPDATE product_image SET image = :image, product_id = :product_id WHERE id = :idimage
+      UPDATE product_image SET image = :image WHERE id = :idimage
     ");
     $result  = $prepare->execute([
                                    'idimage'    => $idimage,
-                                   'product_id' => $product_id,
                                    'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
                                  ]);
 

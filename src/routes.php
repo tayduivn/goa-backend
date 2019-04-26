@@ -60,6 +60,10 @@ $app->group('/api', function () use ($app) {
   $app->put('/categories', 'App\Controller\CategoryController:update');
   $app->delete('/categories', 'App\Controller\CategoryController:delete');
 
+  $app->post('/categories/products', 'App\Controller\ProductCategoryController:register');
+  $app->put('/categories/products', 'App\Controller\ProductCategoryController:update');
+  $app->delete('/categories/products', 'App\Controller\ProductCategoryController:delete');
+
   $app->post('/images/register', 'App\Controller\ImageController:register');
   $app->post('/images/update', 'App\Controller\ImageController:update');
   $app->delete('/images', 'App\Controller\ImageController:delete');
@@ -75,7 +79,7 @@ $app->group('/api', function () use ($app) {
   $app->get('/carts', 'App\Controller\ContentController:getAll');
   $app->post('/carts', 'App\Controller\ContentController:register');
   $app->put('/carts', 'App\Controller\ContentController:update');
-  $app->delete('/delete', 'App\Controller\ContentController:delete');
+  $app->delete('/carts', 'App\Controller\ContentController:delete');
 });
 
 // fallback for home page

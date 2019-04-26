@@ -22,55 +22,47 @@ class UserController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $iduser = $args['id'];
+    $order   = $request->getQueryParam('order', $default = 'ASC');
+    $limit   = $request->getQueryParam('limit', $default = '-1');
+    $type    = $request->getQueryParam('type', $default = 'all');
+    $id      = $request->getQueryParam('id', $default = false);
 
-    $statement = $this->db->prepare("SELECT * FROM user WHERE active != '0' AND iduser != :iduser");
-    $statement->execute(['iduser' => $iduser]);
+    if ($type !== 'all') {
+      $statement = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
+                                        user.address, user.phone, user.message, user.active, user.role_id, 
+                                        user.inserted_at AS user_inserted_at, user.updated_at AS user_updated_at, 
+                                        r.id, r.name, r.active, r.inserted_at, r.updated_at
+                                        FROM user INNER JOIN role r on user.role_id = r.id 
+                                        WHERE user.active != '0' AND r.name = :type");
+      $statement->execute(['type' => $type]);
+    } else if ($id) {
+      $statement = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
+                                        user.address, user.phone, user.message, user.active, user.role_id, 
+                                        user.inserted_at, user.updated_at, r.id, r.name, r.active, r.inserted_at, r.updated_at
+                                        FROM user INNER JOIN role r on user.role_id = r.id 
+                                        WHERE user.active != '0' AND user.id = :id");
+      $statement->execute(['id' => $id]);
+    } else {
+      $statement = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
+                                        user.address, user.phone, user.message, user.active, user.role_id, 
+                                        user.inserted_at, user.updated_at, r.id, r.name, r.active, r.inserted_at, r.updated_at
+                                        FROM user INNER JOIN role r on user.role_id = r.id 
+                                        WHERE user.active != '0'");
+      $statement->execute();
+    }
+
     $result  = $statement->fetchAll();
     $details = is_array($result) ? $result : [];
 
     return $this->handleRequest($response, 200, '', $details);
   }
 
-  public function profile(Request $request, Response $response, $args) {
-    $iduser = $args['iduser'];
-
-    if (empty($iduser))
-      return $this->handleRequest($response, 400, 'Requerid iduser');
-
-    $statement = $this->db->prepare("SELECT * FROM user WHERE iduser = :iduser AND active != '0'");
-    $statement->execute(['iduser' => $iduser]);
-    $result = $statement->fetch();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
-  public function getTypeUser(Request $request, Response $response, $args) {
-    $type = $args['type'];
-
-    if (empty($type))
-      return $this->handleRequest($response, 400, 'Requerid type');
-
-    $statement = $this->db->prepare("SELECT * FROM user WHERE type = :type AND active != '0'");
-    $statement->execute(['type' => $type]);
-    $result = $statement->fetchAll();
-    if (is_array($result)) {
-      $details = $result;
-    } else {
-      return $this->handleRequest($response, 404);
-    }
-
-    return $this->handleRequest($response, 200, '', $details);
-  }
-
   public function login(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $statement    = $this->db->prepare("SELECT * FROM user INNER JOIN role r on user.role_id = r.id WHERE email= :email AND user.active != 0");
+    $statement    = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
+                                        user.address, user.phone, user.message, user.active, user.role_id, 
+                                        user.inserted_at, user.updated_at, r.id, r.name, r.active, r.inserted_at, r.updated_at 
+                                        FROM user INNER JOIN role r on user.role_id = r.id WHERE email= :email AND user.active != 0");
     $statement->bindParam("email", $request_body['email']);
     $statement->execute();
     $user = $statement->fetchObject();

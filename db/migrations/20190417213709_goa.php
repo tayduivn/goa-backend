@@ -25,9 +25,9 @@ class Goa extends AbstractMigration {
    * with the Table class.
    */
   public function change() {
-    /*if ($this->hasTable('role')) {
+    if ($this->hasTable('role')) {
       $this->table('role')->drop()->save();
-    }*/
+    }
     $this->table('role')
       ->addColumn('name', 'string', ['limit' => 255])
       ->addColumn('active', 'boolean', ['default' => true])
