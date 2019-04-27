@@ -23,10 +23,10 @@ class CartController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $id          = $request->getQueryParam('id');
-    $order       = $request->getQueryParam('order', $default = 'ASC');
+    $id         = $request->getQueryParam('id');
+    $order      = $request->getQueryParam('order', $default = 'ASC');
     $showByUser = $request->getQueryParam('showByUser', $default = false);
-    $userId      = $request->getQueryParam('userId');
+    $userId     = $request->getQueryParam('userId');
 
     if ($id !== null) {
       $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
@@ -82,23 +82,13 @@ class CartController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $price        = $request_body['price'];
-    $quantity     = $request_body['quantity'];
     $user_id      = $request_body['user_id'];
-    $product_id   = $request_body['product_id'];
 
-    if (!isset($price) && !isset($quantity)) {
+    if (!isset($user_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
-    $query   = "INSERT INTO cart (`price`, `quantity`, `user_id`, `product_id`) 
-                VALUES (:price, :quantity, :user_id, :product_id)";
-    $prepare = $this->db->prepare($query);
-    $result  = $prepare->execute([
-                                   'price'      => $price,
-                                   'quantity'   => $quantity,
-                                   'user_id'    => $user_id,
-                                   'product_id' => $product_id,
-                                 ]);
+    $prepare = $this->db->prepare("INSERT INTO cart (`user_id`) VALUES (:user_id)");
+    $result  = $prepare->execute(['user_id' => $user_id]);
 
     return $this->postSendResponse($response, $result, 'Datos registrados');
   }
@@ -106,28 +96,14 @@ class CartController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $id           = $request_body['id'];
-    $price        = $request_body['price'];
-    $quantity     = $request_body['quantity'];
-    $user_id      = $request_body['user_id'];
-    $product_id   = $request_body['product_id'];
+    $status       = $request_body['status'];
 
-    if (!isset($id) && !isset($price) && !isset($quantity)) {
+    if (!isset($id) && !isset($status)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE cart 
-      SET price = :price, quantity = :quantity, user_id = :user_id, product_id = :product_id
-      WHERE id = :id"
-    );
-
-    $result = $prepare->execute([
-                                  'id'         => $id,
-                                  'price'      => $price,
-                                  'quantity'   => $quantity,
-                                  'user_id'    => $user_id,
-                                  'product_id' => $product_id,
-                                ]);
+    $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
+    $result = $prepare->execute(['id' => $id, 'status' => $status,]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }

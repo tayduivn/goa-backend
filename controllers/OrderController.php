@@ -27,7 +27,7 @@ class OrderController extends HandleRequest {
     $order  = $request->getQueryParam('order', $default = 'ASC');
     $userId = $request->getQueryParam('userId');
     $cartId = $request->getQueryParam('cartId');
-    $status = $request->getQueryParam('status', $default = 'Nuevo');
+    $status = $request->getQueryParam('status', $default = 'Pendiente');
 
     if ($id !== null) {
       $query     = "SELECT * FROM `order` WHERE id = :id AND active != '0' ORDER BY inserted_at ASC";
@@ -42,27 +42,22 @@ class OrderController extends HandleRequest {
       $statement->execute(['status' => $status, 'userId' => $userId]);
 
     } elseif ($userId !== null && $cartId !== null) {
-      $query     = "SELECT `order`.id AS order_id, `order`.subtotal, `order`.total, `order`.active, `order`.status, `order`.updated_at AS order_updated_at, 
-                    `order`.user_id, `order`.cart_id AS order_cart_id, `order`.inserted_at AS order_inserted_at, 
-                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
-                    u.inserted_at, u.updated_at 
-                    FROM `order` INNER JOIN user u on `order`.user_id = u.id
-                    WHERE `order`.active != '0' AND `order`.user_id = :userId AND cart_id = :cartId";
+      $query     = "SELECT `order`.id, `order`.subtotal, `order`.total, `order`.status, `order`.active, 
+                    `order`.inserted_at, `order`.updated_at, `order`.user_id, `order`.cart_id, 
+                    c.id, c.status, c.active, c.inserted_at, c.updated_at, c.user_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, 
+                    u.role_id, u.inserted_at, u.updated_at
+                    FROM `order` INNER JOIN cart c on `order`.cart_id = c.id INNER JOIN user u on `order`.user_id = u.id
+                    WHERE `order`.active != '0' AND `order`.user_id = :userId AND `order`.cart_id = :cartId";
       $statement = $this->db->prepare($query);
       $statement->execute(['userId' => $userId, 'cartId' => $cartId]);
       $result = $statement->fetchAll();
 
-      var_dump($result[0]['order_cart_id']);
-
       if (is_array($result)) {
-        $query     = "SELECT cart.id, cart.price, cart.quantity, cart.active, cart.inserted_at, cart.updated_at, 
-                      cart.user_id, cart.product_id, 
-                      p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
-                      p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
-                    FROM cart INNER JOIN product p on cart.product_id = p.id
-                    WHERE cart.id = :cartId AND cart.active != 0";
+        $query     = "SELECT id, price, quantity, inserted_at, updated_at, cart_id, product_id
+                    FROM cart_products WHERE cart_id = :cartId";
         $statement = $this->db->prepare($query);
-        $statement->execute(['userId' => $userId, 'cartId' => $result[0]['order_cart_id']]);
+        $statement->execute(['cartId' => $cartId]);
         $resultCarts = $statement->fetchAll();
 
         if (is_array($resultCarts) and !empty($resultCarts)) {
@@ -94,15 +89,19 @@ class OrderController extends HandleRequest {
     if (!isset($subtotal) && !isset($total) && !isset($user_id) && !isset($cart_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
-    $prepare = $this->db->prepare(
-      "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`) VALUES(:subtotal, :total, :user_id, :cart_id)"
-    );
-    $result  = $prepare->execute([
-                                   'subtotal' => $subtotal,
-                                   'total'    => $total,
-                                   'user_id'  => $user_id,
-                                   'cart_id'  => $cart_id,
-                                 ]);
+
+    if ($this->isAlreadyCart($cart_id)) {
+      return $this->handleRequest($response, 409, 'Cart is already cart');
+    } else {
+      $query   = "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`) VALUES(:subtotal, :total, :user_id, :cart_id)";
+      $prepare = $this->db->prepare($query);
+      $result  = $prepare->execute([
+                                     'subtotal' => $subtotal,
+                                     'total'    => $total,
+                                     'user_id'  => $user_id,
+                                     'cart_id'  => $cart_id,
+                                   ]);
+    }
 
     return $this->postSendResponse($response, $result, 'Datos registrados');
   }
@@ -119,19 +118,21 @@ class OrderController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE `order` 
-      SET subtotal = :subtotal, total = :total, user_id = :user_id, cart_id = :cart_id
-      WHERE id = :id"
-    );
+    if ($this->isAlreadyCart($cart_id)) {
+      return $this->handleRequest($response, 409, 'Is already cart');
+    } else {
+      $query   = "UPDATE `order` SET subtotal = :subtotal, total = :total, user_id = :user_id, cart_id = :cart_id
+                WHERE id = :id";
+      $prepare = $this->db->prepare($query);
 
-    $result = $prepare->execute([
-                                  'id'       => $id,
-                                  'subtotal' => $subtotal,
-                                  'total'    => $total,
-                                  'user_id'  => $user_id,
-                                  'cart_id'  => $cart_id,
-                                ]);
+      $result = $prepare->execute([
+                                    'id'       => $id,
+                                    'subtotal' => $subtotal,
+                                    'total'    => $total,
+                                    'user_id'  => $user_id,
+                                    'cart_id'  => $cart_id,
+                                  ]);
+    }
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
@@ -156,6 +157,17 @@ class OrderController extends HandleRequest {
     } else {
       return $this->handleRequest($response, 404, "Información no encontrada");
     }
+  }
+
+  /**
+   * @param $cart_id
+   * @return string
+   */
+  public function isAlreadyCart($cart_id) {
+    $query     = "SELECT * FROM `order` WHERE cart_id = :cartId";
+    $statement = $this->db->prepare($query);
+    $statement->execute(['cartId' => $cart_id]);
+    return !empty($statement->fetchAll());
   }
 
 }

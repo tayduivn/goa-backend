@@ -156,7 +156,7 @@ class Goa extends AbstractMigration {
 
 
   /**
-   * status: 'Nuevo', 'Enviando', 'Completado', 'Cancelado'
+   * status: 'Pendiente', 'Enviando', 'Completado', 'Cancelado'
    */
   public function tableOrder() {
     if ($this->hasTable('order')) {
@@ -165,7 +165,7 @@ class Goa extends AbstractMigration {
     $this->table('order')
       ->addColumn('subtotal', 'decimal')
       ->addColumn('total', 'decimal')
-      ->addColumn('status', 'enum', ['values' => ['Nuevo', 'Enviando', 'Completado', 'Cancelado'], 'default' => 'Nuevo'])
+      ->addColumn('status', 'enum', ['values' => ['Pendiente', 'Enviando', 'Completado', 'Cancelado'], 'default' => 'Pendiente'])
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
