@@ -80,6 +80,11 @@ $app->group('/api', function () use ($app) {
   $app->post('/carts', 'App\Controller\CartController:register');
   $app->put('/carts', 'App\Controller\CartController:update');
   $app->delete('/carts', 'App\Controller\CartController:delete');
+
+  $app->get('/carts/products', 'App\Controller\CartProductsController:getAll');
+  $app->post('/carts/products', 'App\Controller\CartProductsController:register');
+  $app->put('/carts/products', 'App\Controller\CartProductsController:update');
+  $app->delete('/carts/products', 'App\Controller\CartProductsController:delete');
 });
 
 // fallback for home page

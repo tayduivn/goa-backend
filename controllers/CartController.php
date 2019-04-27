@@ -25,43 +25,54 @@ class CartController extends HandleRequest {
   public function getAll(Request $request, Response $response, $args) {
     $id          = $request->getQueryParam('id');
     $order       = $request->getQueryParam('order', $default = 'ASC');
-    $orderByUser = $request->getQueryParam('orderByUser', $default = false);
+    $showByUser = $request->getQueryParam('showByUser', $default = false);
     $userId      = $request->getQueryParam('userId');
 
     if ($id !== null) {
-      $query     = "SELECT * FROM cart WHERE id = :id AND active != '0' ORDER BY cart.inserted_at ASC";
+      $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
+                    u.inserted_at, u.updated_at, 
+                    cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
+                    p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
+                    p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
+                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN cart_products cp on cart.id = cp.cart_id 
+                    INNER JOIN product p on cp.product_id = p.id 
+                    WHERE cart.id = :id AND cart.active != '0' ORDER BY cart.inserted_at ASC";
       $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
     } else if ($userId) {
-      $query     = "SELECT cart.id AS cart_id, cart.price, cart.quantity AS cart_quantity, cart.active, cart.inserted_at, cart.updated_at, 
-                    cart.user_id, cart.product_id, 
+      $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
+                    cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
                     p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
                     p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
-                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN product p on cart.product_id = p.id
-                    WHERE cart.active != '0' AND cart.user_id = :user_id";
+                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN cart_products cp on cart.id = cp.cart_id 
+                    INNER JOIN product p on cp.product_id = p.id
+                    WHERE cart.user_id = :user_id AND cart.active != 0";
       $statement = $this->db->prepare($query);
       $statement->execute(['user_id' => $userId]);
-    } else if ($orderByUser) {
-      $query     = "SELECT cart.id AS cart_id, cart.price, cart.quantity AS cart_quantity, cart.active, cart.inserted_at, cart.updated_at, 
-                    cart.user_id, cart.product_id, 
+    } else if ($showByUser) {
+      $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
+                    cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
                     p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
                     p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
-                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN product p on cart.product_id = p.id
+                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN cart_products cp on cart.id = cp.cart_id 
+                    INNER JOIN product p on cp.product_id = p.id
                     WHERE cart.active != '0' GROUP BY cart.user_id";
       $statement = $this->db->prepare($query);
       $statement->execute();
     } else {
-      $query     = "SELECT cart.id AS cart_id, cart.price, cart.quantity AS cart_quantity, cart.active, cart.inserted_at, cart.updated_at, 
-                    cart.user_id, cart.product_id, 
+      $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
+                    cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
                     p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
                     p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
-                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN product p on cart.product_id = p.id
+                    FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN cart_products cp on cart.id = cp.cart_id 
+                    INNER JOIN product p on cp.product_id = p.id
                     WHERE cart.active != '0'";
       $statement = $this->db->prepare($query);
       $statement->execute();
