@@ -7,7 +7,6 @@ class CartSeeder extends AbstractSeed {
   public function getDependencies() {
     return [
       'UserSeeder',
-      'ProductSeeder'
     ];
   }
 
@@ -23,10 +22,8 @@ class CartSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'price'      => 50.50,
-        'quantity'   => 10,
-        'user_id'    => 2,
-        'product_id' => 1,
+        'status'      => 'current',
+        'user_id'    => 1,
       ]
     ];
     $this->table('cart')->insert($data)->save();

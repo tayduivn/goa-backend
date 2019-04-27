@@ -2,13 +2,15 @@
 
 use Phinx\Seed\AbstractSeed;
 
-class TransactionSeeder extends AbstractSeed {
+class CartProductsSeeder extends AbstractSeed {
 
   public function getDependencies() {
     return [
-      'OrderSeeder',
+      'CartSeeder',
+      'ProductSeeder',
     ];
   }
+
 
   /**
    * Run Method.
@@ -21,14 +23,13 @@ class TransactionSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'code'               => '001',
-        'processor'          => 'Paypal',
-        'processor_trans_id' => '002',
-        'cc_num'             => '2525',
-        'cc_type'            => 'Credit Card',
-        'order_id'           => '1',
+        'price'      => 50.50,
+        'quantity'   => 10,
+        'cart_id'    => 1,
+        'product_id' => 1,
       ]
     ];
-    $this->table('transaction')->insert($data)->save();
+    $this->table('cart_products')->insert($data)->save();
+
   }
 }

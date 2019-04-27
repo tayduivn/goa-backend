@@ -42,19 +42,38 @@ class OrderController extends HandleRequest {
       $statement->execute(['status' => $status, 'userId' => $userId]);
 
     } elseif ($userId !== null && $cartId !== null) {
-      $query     = "SELECT `order`.id, `order`.subtotal, `order`.total, `order`.active, `order`.status, `order`.updated_at AS order_updated_at, 
-                    `order`.user_id, `order`.cart_id, `order`.inserted_at AS order_inserted_at, 
+      $query     = "SELECT `order`.id AS order_id, `order`.subtotal, `order`.total, `order`.active, `order`.status, `order`.updated_at AS order_updated_at, 
+                    `order`.user_id, `order`.cart_id AS order_cart_id, `order`.inserted_at AS order_inserted_at, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
-                    u.inserted_at, u.updated_at, 
-                    c.id, c.price, c.quantity, c.active, c.inserted_at, c.updated_at, c.user_id, c.product_id, 
-                    p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
-                    p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id 
-                    FROM `order` INNER JOIN user u on `order`.user_id = u.id INNER JOIN cart c on `order`.cart_id = c.id
-                    INNER JOIN product p on c.product_id = p.id
+                    u.inserted_at, u.updated_at 
+                    FROM `order` INNER JOIN user u on `order`.user_id = u.id
                     WHERE `order`.active != '0' AND `order`.user_id = :userId AND cart_id = :cartId";
       $statement = $this->db->prepare($query);
       $statement->execute(['userId' => $userId, 'cartId' => $cartId]);
+      $result = $statement->fetchAll();
 
+      var_dump($result[0]['order_cart_id']);
+
+      if (is_array($result)) {
+        $query     = "SELECT cart.id, cart.price, cart.quantity, cart.active, cart.inserted_at, cart.updated_at, 
+                      cart.user_id, cart.product_id, 
+                      p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
+                      p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
+                    FROM cart INNER JOIN product p on cart.product_id = p.id
+                    WHERE cart.id = :cartId AND cart.active != 0";
+        $statement = $this->db->prepare($query);
+        $statement->execute(['userId' => $userId, 'cartId' => $result[0]['order_cart_id']]);
+        $resultCarts = $statement->fetchAll();
+
+        if (is_array($resultCarts) and !empty($resultCarts)) {
+          $result[0]['products'] = $resultCarts;
+        } else {
+          $result[0]['products'] = [];
+        }
+        return $this->handleRequest($response, 200, '', $result);
+      } else {
+        return $this->handleRequest($response, 204, '', []);
+      }
     } else {
       $query     = "SELECT * 
                     FROM `order`
