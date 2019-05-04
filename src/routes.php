@@ -34,6 +34,8 @@ $app->group('/api', function () use ($app) {
     $app->post('/users/register', 'App\Controller\UserController:register');
     $app->post('/users/forgot', 'App\Controller\UserController:forgot');
 
+    $app->get('/products', 'App\Controller\ProductController:getAll');
+
     $app->get('/categories', 'App\Controller\CategoryController:getAll');
 
     $app->get('/images', 'App\Controller\ImageController:getAll');
@@ -51,7 +53,6 @@ $app->group('/api', function () use ($app) {
   $app->put('/transactions', 'App\Controller\TransactionController:update');
   $app->delete('/transactions', 'App\Controller\TransactionController:delete');
 
-  $app->get('/products', 'App\Controller\ProductController:getAll');
   $app->post('/products', 'App\Controller\ProductController:register');
   $app->put('/products', 'App\Controller\ProductController:update');
   $app->delete('/products', 'App\Controller\ProductController:delete');

@@ -83,6 +83,7 @@ class Goa extends AbstractMigration {
       ->addColumn('description_two', 'string')
       ->addColumn('preparation', 'string')
       ->addColumn('regular_price', 'decimal')
+      ->addColumn('nutrition', 'string', ['limit' => 255])
       ->addColumn('quantity', 'integer')
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
@@ -112,6 +113,7 @@ class Goa extends AbstractMigration {
       $this->table('product_review')->drop()->save();
     }
     $this->table('product_review')
+      ->addColumn('title', 'string', ['limit' => 50])
       ->addColumn('message', 'string', ['limit' => 255])
       ->addColumn('stars', 'integer', ['limit' => 1])
       ->addColumn('active', 'boolean', ['default' => true])

@@ -41,6 +41,7 @@ class ProductSeeder extends AbstractSeed {
         'description_one'   => 'Producto para el bienestar one',
         'description_two'   => 'Producto para el bienestar two',
         'regular_price'     => 250.25,
+        'nutrition'         => 'no-image.png',
         'preparation'       => '1. Ingres el batido',
         'quantity'          => 50,
         'user_id'           => '1',

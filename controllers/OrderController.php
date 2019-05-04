@@ -30,7 +30,12 @@ class OrderController extends HandleRequest {
     $status = $request->getQueryParam('status', $default = 'Pendiente');
 
     if ($id !== null) {
-      $query     = "SELECT * FROM `order` WHERE id = :id AND active != '0' ORDER BY inserted_at ASC";
+      $query     = "SELECT `order`.id AS order_id, `order`.subtotal, `order`.total, `order`.status, `order`.active, 
+                    `order`.inserted_at AS order_inserted_at, `order`.updated_at AS order_updated_at, `order`.user_id, `order`.cart_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, 
+                    u.role_id, u.inserted_at, u.updated_at 
+                    FROM `order` INNER JOIN user u on `order`.user_id = u.id 
+                    WHERE `order`.id = :id AND `order`.active != '0' ORDER BY `order`.inserted_at ASC";
       $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
 
@@ -48,9 +53,9 @@ class OrderController extends HandleRequest {
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, 
                     u.role_id, u.inserted_at, u.updated_at
                     FROM `order` INNER JOIN cart c on `order`.cart_id = c.id INNER JOIN user u on `order`.user_id = u.id
-                    WHERE `order`.active != '0' AND `order`.user_id = :userId AND `order`.cart_id = :cartId";
+                    WHERE `order`.active != '0' AND `order`.status = :status AND `order`.user_id = :userId AND `order`.cart_id = :cartId";
       $statement = $this->db->prepare($query);
-      $statement->execute(['userId' => $userId, 'cartId' => $cartId]);
+      $statement->execute(['status' => $status, 'userId' => $userId, 'cartId' => $cartId]);
       $result = $statement->fetchAll();
 
       if (is_array($result)) {
@@ -70,8 +75,11 @@ class OrderController extends HandleRequest {
         return $this->handleRequest($response, 204, '', []);
       }
     } else {
-      $query     = "SELECT * 
-                    FROM `order`
+      $query     = "SELECT `order`.id AS order_id, `order`.subtotal, `order`.total, `order`.status, `order`.active, 
+                    `order`.inserted_at AS order_inserted_at, `order`.updated_at AS order_updated_at, `order`.user_id, `order`.cart_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, 
+                    u.role_id, u.inserted_at, u.updated_at 
+                    FROM `order` INNER JOIN user u on `order`.user_id = u.id
                     WHERE `order`.active != '0' AND status = :status";
       $statement = $this->db->prepare($query);
       $statement->execute(['status' => $status]);
