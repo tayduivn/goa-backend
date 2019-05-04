@@ -77,7 +77,18 @@ class CartController extends HandleRequest {
       $statement = $this->db->prepare($query);
       $statement->execute();
     }
-    return $this->getSendResponse($response, $statement);
+
+    $result = $statement->fetchAll();
+
+    if (is_array($result)) {
+      foreach ($result as $index => $product) {
+        $result = $this->getImagesProducts($this->db, $product, $result, $index);
+        $result = $this->getCategoriesProducts($this->db, $product, $result, $index);
+      }
+      return $this->handleRequest($response, 200, '', $result);
+    } else {
+      return $this->handleRequest($response, 204, '', []);
+    }
   }
 
   public function register(Request $request, Response $response, $args) {

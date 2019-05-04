@@ -39,4 +39,46 @@ class Utils {
 
     mail($to, $subject, $message, $headers);
   }
+
+  /**
+   * @param       $db
+   * @param       $product
+   * @param array $result
+   * @param       $index
+   * @return array
+   */
+  function getImagesProducts($db, $product, array $result, $index) {
+    $statement = $db->prepare("SELECT product_image.id AS id_image, image FROM product_image
+                                        INNER JOIN product p on product_image.product_id = p.id
+                                        WHERE product_image.active != 0 AND product_image.product_id = :id");
+    $statement->execute(['id' => $product['id']]);
+    $resultImage = $statement->fetchAll();
+
+    if (is_array($resultImage) and !empty($resultImage)) {
+      $result[$index]['images'] = $resultImage;
+    } else {
+      $result[$index]['images'] = [['id_image' => 0, 'image' => 'http://goa-backend/src/uploads/no-image.png']];
+    }
+    return $result;
+  }
+
+  /**
+   * @param $db
+   * @param $product
+   * @param $result
+   * @param $index
+   * @return mixed
+   */
+  function getCategoriesProducts($db, $product, $result, $index) {
+    $statement = $db->prepare("SELECT category.id, category.name FROM category
+                                        INNER JOIN product_category pc on category.id = pc.category_id
+                                        WHERE category.active != 0 AND pc.product_id = :id");
+    $statement->execute(['id' => $product['id']]);
+    $resultCategory = $statement->fetchAll();
+
+    if (is_array($resultCategory) and !empty($resultCategory)) {
+      $result[$index]['categories'] = $resultCategory;
+    }
+    return $result;
+  }
 }

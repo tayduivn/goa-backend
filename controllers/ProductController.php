@@ -106,8 +106,10 @@ class ProductController extends HandleRequest {
     }
 
     if ($id) {
-      $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0' ORDER BY :order");
+      $statement = $this->db->prepare("SELECT * 
+                                      FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                      INNER JOIN user u on pr.user_id = u.id
+                                      WHERE product.id = :id AND product.active != '0' ORDER BY :order");
       $statement->execute(['id' => $id, 'order' => $order]);
     } else {
       $statement = $this->db->prepare("SELECT * FROM product 
@@ -119,8 +121,8 @@ class ProductController extends HandleRequest {
 
     if (is_array($result)) {
       foreach ($result as $index => $product) {
-        $result = $this->getImagesProducts($product, $result, $index);
-        $result = $this->getCategoriesProducts($product, $result, $index);
+        $result = $this->getImagesProducts($this->db, $product, $result, $index);
+        $result = $this->getCategoriesProducts($this->db, $product, $result, $index);
       }
       return $this->handleRequest($response, 200, '', $result);
     } else {
@@ -238,46 +240,6 @@ class ProductController extends HandleRequest {
     $statement = $this->db->prepare("SELECT name FROM product WHERE name = :name");
     $statement->execute(['name' => $name]);
     return empty($statement->fetchAll());
-  }
-
-  /**
-   * @param       $product
-   * @param array $result
-   * @param       $index
-   * @return array
-   */
-  public function getImagesProducts($product, array $result, $index) {
-    $statement = $this->db->prepare("SELECT product_image.id AS id_image, image FROM product_image
-                                        INNER JOIN product p on product_image.product_id = p.id
-                                        WHERE product_image.active != 0 AND product_image.product_id = :id");
-    $statement->execute(['id' => $product['id']]);
-    $resultImage = $statement->fetchAll();
-
-    if (is_array($resultImage) and !empty($resultImage)) {
-      $result[$index]['images'] = $resultImage;
-    } else {
-      $result[$index]['images'] = [['id_image' => 0, 'image' => 'http://goa-backend/src/uploads/no-image.png']];
-    }
-    return $result;
-  }
-
-  /**
-   * @param $product
-   * @param $result
-   * @param $index
-   * @return mixed
-   */
-  public function getCategoriesProducts($product, $result, $index) {
-    $statement = $this->db->prepare("SELECT category.id, category.name FROM category
-                                        INNER JOIN product_category pc on category.id = pc.category_id
-                                        WHERE category.active != 0 AND pc.product_id = :id");
-    $statement->execute(['id' => $product['id']]);
-    $resultCategory = $statement->fetchAll();
-
-    if (is_array($resultCategory) and !empty($resultCategory)) {
-      $result[$index]['categories'] = $resultCategory;
-    }
-    return $result;
   }
 
 }

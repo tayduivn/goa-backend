@@ -20,7 +20,7 @@ class ProductImageSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'image'      => 'image.png',
+        'image'      => 'http://goa-backend/src/uploads/no-image.png',
         'product_id' => 1,
       ]
     ];
