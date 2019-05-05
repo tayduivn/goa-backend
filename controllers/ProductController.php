@@ -59,7 +59,6 @@ class ProductController extends HandleRequest {
           break;
 
         default:
-          var_dump("hi");
           $statement = $this->db->prepare("SELECT product.id, product.sku, product.name, product.description_short, product.description_one, 
                                           product.description_two, product.preparation, product.nutrition, product.quantity, product.active, 
                                           product.inserted_at, product.updated_at, product.user_id, product.regular_price, 
@@ -77,21 +76,21 @@ class ProductController extends HandleRequest {
       switch ($order) {
         case 'ASC':
           $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
+                                        WHERE product.active != '0'
                                         ORDER BY product.inserted_at ASC LIMIT " . $limit);
           $statement->execute();
           break;
 
         case 'RAND':
           $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
+                                        WHERE product.active != '0'
                                         ORDER BY product.inserted_at ASC LIMIT " . $limit);
           $statement->execute();
           break;
 
         default:
           $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
+                                        WHERE product.active != '0'
                                         ORDER BY product.inserted_at DESC LIMIT " . $limit);
           $statement->execute();
           break;
@@ -133,7 +132,8 @@ class ProductController extends HandleRequest {
                                           pr.product_id, pr.message 
                                           FROM product INNER JOIN product_review pr on product.id = pr.product_id
                                           INNER JOIN user u on pr.user_id = u.id
-                                          WHERE product.id = :id AND product.active != '0' ORDER BY ASC LIMIT " . $limit);
+                                          WHERE product.id = :id AND product.active != '0' 
+                                          ORDER BY product.id ASC LIMIT " . $limit);
           $statement->execute(['id' => $id]);
           break;
 
@@ -145,7 +145,8 @@ class ProductController extends HandleRequest {
                                           pr.product_id, pr.message 
                                           FROM product INNER JOIN product_review pr on product.id = pr.product_id
                                           INNER JOIN user u on pr.user_id = u.id
-                                          WHERE product.id = :id AND product.active != '0' ORDER BY DESC LIMIT " . $limit);
+                                          WHERE product.id = :id AND product.active != '0' 
+                                          ORDER BY product.id DESC LIMIT " . $limit);
           $statement->execute(['id' => $id]);
           break;
 
@@ -157,7 +158,7 @@ class ProductController extends HandleRequest {
                                           pr.product_id, pr.message 
                                           FROM product INNER JOIN product_review pr on product.id = pr.product_id
                                           INNER JOIN user u on pr.user_id = u.id
-                                          WHERE product.id = :id AND product.active != '0' ORDER BY DESC LIMIT " . $limit);
+                                          ORDER BY product.id DESC LIMIT " . $limit);
           $statement->execute(['id' => $id]);
           break;
       }
