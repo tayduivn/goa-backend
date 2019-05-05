@@ -27,12 +27,14 @@ class ReviewController extends HandleRequest {
     $order = $request->getQueryParam('order', $default = 'ASC');
 
     if ($id !== null) {
-      $query     = "SELECT * FROM product_review INNER JOIN user u on product_review.user_id = u.id
-                    INNER JOIN product p on product_review.product_id = p.id WHERE product_review.active != '0'";
+      $query     = "SELECT * 
+                    FROM product_review INNER JOIN user u on product_review.user_id = u.id
+                    INNER JOIN product p on product_review.product_id = p.id 
+                    WHERE product_review.active != '0'";
       $statement = $this->db->prepare($query . $order);
       $statement->execute(['id' => $id]);
     } else {
-      $query     = "SELECT product_review.id AS review_id, product_review.message, product_review.stars, 
+      $query     = "SELECT product_review.id AS review_id, product_review.title, product_review.message, product_review.stars, 
                     product_review.active, product_review.inserted_at AS review_inserted_at, 
                     product_review.updated_at AS review_updated_at, product_review.user_id, product_review.product_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
@@ -51,18 +53,20 @@ class ReviewController extends HandleRequest {
     $request_body = $request->getParsedBody();
     $stars        = $request_body['stars'];
     $message      = $request_body['message'];
+    $title        = $request_body['title'];
     $user_id      = $request_body['user_id'];
     $product_id   = $request_body['product_id'];
 
-    if (!isset($message)) {
+    if (!isset($message) and !isset($title) and !isset($user_id) and !isset($product_id) and !isset($stars)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare("
-      INSERT INTO product_review (message, stars, user_id, product_id) 
-      VALUES (:message, :stars, :user_id, :product_id)"
+      INSERT INTO product_review (title, message, stars, user_id, product_id) 
+      VALUES (:title, :message, :stars, :user_id, :product_id)"
     );
     $result  = $prepare->execute([
+                                   'title'      => $title,
                                    'message'    => $message,
                                    'stars'      => $stars,
                                    'user_id'    => $user_id,
@@ -77,19 +81,21 @@ class ReviewController extends HandleRequest {
     $id           = $request_body['id'];
     $stars        = $request_body['stars'];
     $message      = $request_body['message'];
+    $title        = $request_body['title'];
     $user_id      = $request_body['user_id'];
     $product_id   = $request_body['product_id'];
 
-    if (!isset($id) and !isset($stars) and !isset($message) and !isset($user_id) and !isset($product_id)) {
+    if (!isset($id) and !isset($stars) and !isset($message) and !isset($title) and !isset($user_id) and !isset($product_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE product_review SET stars = :stars, message = :message, user_id = :user_id, product_id = :product_id  WHERE id = :id"
-    );
+    $query   = "UPDATE product_review 
+                SET stars = :stars, message = :message, title = :title, user_id = :user_id, product_id = :product_id  WHERE id = :id";
+    $prepare = $this->db->prepare($query);
 
     $result = $prepare->execute([
                                   'id'         => $id,
+                                  'title'      => $title,
                                   'message'    => $message,
                                   'stars'      => $stars,
                                   'user_id'    => $user_id,

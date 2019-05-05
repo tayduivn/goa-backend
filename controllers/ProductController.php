@@ -23,59 +23,60 @@ class ProductController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $order    = $request->getQueryParam('order', $default = 'ASC');
+    $order    = $request->getQueryParam('order', $default = 'DESC');
     $limit    = $request->getQueryParam('limit', $default = '-1');
     $id       = $request->getQueryParam('id', $default = false);
-    $category = $request->getQueryParam('category', $default = false);
     $favorite = $request->getQueryParam('favorite', $default = false);
+    $new      = $request->getQueryParam('new', $default = false);
     $shopped  = $request->getQueryParam('shopped', $default = false);
 
     if ($favorite === true) {
       switch ($order) {
         case 'ASC':
-          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
-                                        WHERE product.id = :id AND product.active != '0' 
-                                        ORDER BY pr.stars ASC LIMIT 5");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
-          break;
-
-        case 'DESC':
-          $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+          $statement = $this->db->prepare("SELECT * 
+                                        FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                        WHERE product.active != '0'
+                                        ORDER BY pr.stars ASC LIMIT " . $limit);
+          $statement->execute();
           break;
 
         case 'RAND':
           $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+                                        ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
+          break;
+
+        default:
+          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                        WHERE product.id = :id AND product.active != '0' 
+                                        ORDER BY pr.stars DESC LIMIT " . $limit);
+          $statement->execute();
           break;
       }
     }
 
-    if ($category === true) {
+    if ($new === true) {
       switch ($order) {
         case 'ASC':
-          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
-                                        WHERE product.id = :id AND product.active != '0' 
-                                        ORDER BY pr.stars ASC LIMIT 5");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
-          break;
-
-        case 'DESC':
           $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+                                        ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
           break;
 
         case 'RAND':
           $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+                                        ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
+          break;
+
+        default:
+          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                        WHERE product.id = :id AND product.active != '0' 
+                                        ORDER BY pr.stars DESC LIMIT " . $limit);
+          $statement->execute();
           break;
       }
     }
@@ -83,38 +84,74 @@ class ProductController extends HandleRequest {
     if ($shopped === true) {
       switch ($order) {
         case 'ASC':
-          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
-                                        WHERE product.id = :id AND product.active != '0' 
-                                        ORDER BY pr.stars ASC LIMIT 5");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
-          break;
-
-        case 'DESC':
           $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+                                        ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
           break;
 
         case 'RAND':
           $statement = $this->db->prepare("SELECT * FROM product  
                                         WHERE product.id = :id AND product.active != '0'
-                                        ORDER BY product.inserted_at ASC");
-          $statement->execute(['id' => $id, 'limit' => $limit]);
+                                        ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
+          break;
+
+        default:
+          $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                        WHERE product.id = :id AND product.active != '0' 
+                                        ORDER BY pr.stars DESC LIMIT " . $limit);
+          $statement->execute();
           break;
       }
     }
 
     if ($id) {
-      $statement = $this->db->prepare("SELECT * 
+      switch ($order) {
+        case 'ASC':
+          $statement = $this->db->prepare("SELECT * 
                                       FROM product INNER JOIN product_review pr on product.id = pr.product_id
                                       INNER JOIN user u on pr.user_id = u.id
-                                      WHERE product.id = :id AND product.active != '0' ORDER BY :order");
-      $statement->execute(['id' => $id, 'order' => $order]);
+                                      WHERE product.id = :id AND product.active != '0' ORDER BY ASC LIMIT " . $limit);
+          $statement->execute(['id' => $id]);
+          break;
+
+        case 'RAND':
+          $statement = $this->db->prepare("SELECT * 
+                                      FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                      INNER JOIN user u on pr.user_id = u.id
+                                      WHERE product.id = :id AND product.active != '0' ORDER BY DESC LIMIT " . $limit);
+          $statement->execute(['id' => $id]);
+          break;
+
+        default:
+          $statement = $this->db->prepare("SELECT * 
+                                      FROM product INNER JOIN product_review pr on product.id = pr.product_id
+                                      INNER JOIN user u on pr.user_id = u.id
+                                      WHERE product.id = :id AND product.active != '0' ORDER BY DESC LIMIT " . $limit);
+          $statement->execute(['id' => $id]);
+          break;
+      }
     } else {
-      $statement = $this->db->prepare("SELECT * FROM product 
-                                        WHERE product.active != '0' ORDER BY product.inserted_at DESC");
-      $statement->execute(['order' => $order]);
+      switch ($order) {
+        case 'ASC':
+          $statement = $this->db->prepare("SELECT * FROM product 
+                                        WHERE product.active != '0' ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
+          break;
+
+        case 'RAND':
+          $statement = $this->db->prepare("SELECT * FROM product 
+                                        WHERE product.active != '0' ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $statement->execute();
+          break;
+
+        default:
+          $statement = $this->db->prepare("SELECT * FROM product 
+                                        WHERE product.active != '0' ORDER BY product.inserted_at DESC LIMIT " . $limit);
+          $statement->execute();
+          break;
+      }
     }
 
     $result = $statement->fetchAll();
