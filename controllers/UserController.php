@@ -97,10 +97,9 @@ class UserController extends HandleRequest {
     if ($this->validateUser($email)) {
       return $this->handleRequest($response, 409, "Email ya registrado");
     } else {
-      $prepare = $this->db->prepare(
-        "INSERT INTO user (`password`, `email`, `address`, `phone`, `role_id`, `first_name`, `last_name`) 
-          VALUES (:password, :email, :address, :phone, :role_id, :first_name, :last_name)"
-      );
+      $query   = "INSERT INTO user (`password`, `email`, `address`, `phone`, `role_id`, `first_name`, `last_name`) 
+                  VALUES (:password, :email, :address, :phone, :role_id, :first_name, :last_name)";
+      $prepare = $this->db->prepare($query);
 
       $result = $prepare->execute([
                                     'email'      => $email,
@@ -112,7 +111,11 @@ class UserController extends HandleRequest {
                                     'role_id'    => $role_id,
                                   ]);
 
-      return $result ? $this->handleRequest($response, 201, "Datos registrados", ['idUser' => $this->db->lastInsertId()]) : $this->handleRequest($response, 500);
+      if ($result) {
+        return $this->handleRequest($response, 200, "Datos registrados", ['idUser' => $this->db->lastInsertId()]);
+      } else {
+        return $this->handleRequest($response, 500);
+      }
     }
   }
 
