@@ -84,6 +84,30 @@ class Utils {
 
   /**
    * @param $db
+   * @param $cart
+   * @param $result
+   * @param $index
+   * @return mixed
+   */
+  function getCartsProducts($db, $cart, $result, $index) {
+    $query     = "SELECT 
+                        cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
+                        p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
+                        p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
+                        FROM cart_products cp INNER JOIN product p on cp.product_id = p.id
+                        WHERE p.active != '0' AND cp.cart_id = :id";
+    $statement = $db->prepare($query);
+    $statement->execute(['id' => $cart['cart_id']]);
+    $resultImage = $statement->fetchAll();
+
+    if (is_array($resultImage) and !empty($resultImage)) {
+      $result[$index]['products'] = $resultImage;
+    }
+    return $result;
+  }
+
+  /**
+   * @param $db
    * @param $product
    * @param $result
    * @param $index

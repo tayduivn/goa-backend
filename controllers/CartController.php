@@ -24,11 +24,13 @@ class CartController extends HandleRequest {
 
   public function getAll(Request $request, Response $response, $args) {
     $id         = $request->getQueryParam('id');
-    $order      = $request->getQueryParam('order', $default = 'ASC');
     $showByUser = $request->getQueryParam('showByUser', $default = false);
     $userId     = $request->getQueryParam('userId');
+    $status     = $request->getQueryParam('status', $default = false);
 
-    if ($id !== null) {
+    $all = isset($id) || isset($userId) || $showByUser ? false : true;
+
+    if (isset($id)) {
       $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
@@ -40,8 +42,19 @@ class CartController extends HandleRequest {
                     WHERE cart.id = :id AND cart.active != '0' ORDER BY cart.inserted_at ASC";
       $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
-    } else if ($userId) {
-      $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
+    }
+
+    if (isset($userId)) {
+      if ($status === 'current') {
+        $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
+                    u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
+                    u.inserted_at, u.updated_at
+                    FROM cart INNER JOIN user u on cart.user_id = u.id
+                    WHERE cart.user_id = :user_id AND cart.active != 0 AND cart.status = :statusCart";
+        $statement = $this->db->prepare($query);
+        $statement->execute(['user_id' => $userId, 'statusCart' => $status]);
+      } else {
+        $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
                     cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
@@ -50,9 +63,12 @@ class CartController extends HandleRequest {
                     FROM cart INNER JOIN user u on cart.user_id = u.id INNER JOIN cart_products cp on cart.id = cp.cart_id 
                     INNER JOIN product p on cp.product_id = p.id
                     WHERE cart.user_id = :user_id AND cart.active != 0";
-      $statement = $this->db->prepare($query);
-      $statement->execute(['user_id' => $userId]);
-    } else if ($showByUser) {
+        $statement = $this->db->prepare($query);
+        $statement->execute(['user_id' => $userId]);
+      }
+    }
+
+    if ($showByUser) {
       $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
@@ -64,7 +80,9 @@ class CartController extends HandleRequest {
                     WHERE cart.active != '0' GROUP BY cart.user_id";
       $statement = $this->db->prepare($query);
       $statement->execute();
-    } else {
+    }
+
+    if ($all) {
       $query     = "SELECT cart.id AS cart_id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, u.role_id, 
                     u.inserted_at, u.updated_at, 
@@ -81,10 +99,17 @@ class CartController extends HandleRequest {
     $result = $statement->fetchAll();
 
     if (is_array($result)) {
-      foreach ($result as $index => $product) {
-        $result = $this->getImagesProducts($this->db, $product, $result, $index);
-        $result = $this->getCategoriesProducts($this->db, $product, $result, $index);
-        $result = $this->getReviewsProducts($this->db, $product, $result, $index);
+      foreach ($result as $indexCart => $cart) {
+        $result   = $this->getCartsProducts($this->db, $cart, $result, $indexCart);
+        $products = $result[$indexCart]['products'];
+        if (is_array($products)) {
+          foreach ($products as $index => $product) {
+            $products = $this->getImagesProducts($this->db, $product, $products, $index);
+            $products = $this->getCategoriesProducts($this->db, $product, $products, $index);
+            $products = $this->getReviewsProducts($this->db, $product, $products, $index);
+          }
+          $result[$indexCart]['products'] = $products;
+        }
       }
       return $this->handleRequest($response, 200, '', $result);
     } else {
@@ -115,7 +140,7 @@ class CartController extends HandleRequest {
     }
 
     $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
-    $result = $prepare->execute(['id' => $id, 'status' => $status,]);
+    $result  = $prepare->execute(['id' => $id, 'status' => $status,]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
