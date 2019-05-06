@@ -145,7 +145,6 @@ class Goa extends AbstractMigration {
       $this->table('cart_products')->drop()->save();
     }
     $this->table('cart_products')
-      ->addColumn('price', 'decimal')
       ->addColumn('quantity', 'integer')
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])

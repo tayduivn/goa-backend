@@ -23,7 +23,6 @@ class CartProductsSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'price'      => 50.50,
         'quantity'   => 10,
         'cart_id'    => 1,
         'product_id' => 1,

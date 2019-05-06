@@ -59,7 +59,7 @@ class OrderController extends HandleRequest {
       $result = $statement->fetchAll();
 
       if (is_array($result)) {
-        $query     = "SELECT id, price, quantity, inserted_at, updated_at, cart_id, product_id
+        $query     = "SELECT id, quantity, inserted_at, updated_at, cart_id, product_id
                     FROM cart_products WHERE cart_id = :cartId";
         $statement = $this->db->prepare($query);
         $statement->execute(['cartId' => $cartId]);

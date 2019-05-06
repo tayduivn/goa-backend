@@ -46,23 +46,21 @@ class CartProductsController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $price        = $request_body['price'];
     $quantity     = $request_body['quantity'];
     $cart_id      = $request_body['cart_id'];
     $product_id   = $request_body['product_id'];
 
-    if (!isset($price) && !isset($quantity) && !isset($cart_id)) {
+    if (!isset($quantity) && !isset($cart_id) && !isset($product_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     if ($this->isAlreadyProduct($cart_id, $product_id)) {
       return $this->handleRequest($response, 409, 'This product already exist');
     } else {
-      $query   = "INSERT INTO cart_products (`price`, `quantity`, `cart_id`, `product_id`) 
-                VALUES (:price, :quantity, :cart_id, :product_id)";
+      $query   = "INSERT INTO cart_products (`quantity`, `cart_id`, `product_id`) 
+                  VALUES (:quantity, :cart_id, :product_id)";
       $prepare = $this->db->prepare($query);
       $result  = $prepare->execute([
-                                     'price'      => $price,
                                      'quantity'   => $quantity,
                                      'cart_id'    => $cart_id,
                                      'product_id' => $product_id,
@@ -75,22 +73,20 @@ class CartProductsController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $id           = $request_body['id'];
-    $price        = $request_body['price'];
     $quantity     = $request_body['quantity'];
     $product_id   = $request_body['product_id'];
     $cart_id      = $request_body['cart_id'];
 
-    if (!isset($id) && !isset($price) && !isset($quantity) && !isset($product_id)) {
+    if (!isset($id) && !isset($quantity) && !isset($product_id) && !isset($cart_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $query   = "UPDATE cart_products SET price = :price, quantity = :quantity, product_id = :product_id , cart_id = :cart_id 
+    $query   = "UPDATE cart_products SET quantity = :quantity, product_id = :product_id , cart_id = :cart_id 
                 WHERE id = :id";
     $prepare = $this->db->prepare($query);
 
     $result = $prepare->execute([
                                   'id'         => $id,
-                                  'price'      => $price,
                                   'quantity'   => $quantity,
                                   'product_id' => $product_id,
                                   'cart_id'    => $cart_id,
@@ -129,7 +125,7 @@ class CartProductsController extends HandleRequest {
                   WHERE cart_id = :cartId AND product_id = :product_id AND status = 'current'";
     $statement = $this->db->prepare($query);
     $statement->execute(['cartId' => $cart_id, 'product_id' => $product_id]);
-    return empty($statement->fetchAll());
+    return !empty($statement->fetchAll());
   }
 
 }

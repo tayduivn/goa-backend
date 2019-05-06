@@ -91,7 +91,7 @@ class Utils {
    */
   function getCartsProducts($db, $cart, $result, $index) {
     $query     = "SELECT 
-                        cp.id, cp.price, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
+                        cp.id, cp.quantity AS cart_quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id, 
                         p.id, p.sku, p.name, p.description_short, p.description_one, p.description_two, p.preparation, 
                         p.regular_price, p.quantity, p.active, p.inserted_at, p.updated_at, p.user_id
                         FROM cart_products cp INNER JOIN product p on cp.product_id = p.id
