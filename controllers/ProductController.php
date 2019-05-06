@@ -29,6 +29,7 @@ class ProductController extends HandleRequest {
     $favorite = $request->getQueryParam('favorite', $default = false);
     $new      = $request->getQueryParam('new', $default = false);
     $shopped  = $request->getQueryParam('shopped', $default = false);
+    $category = $request->getQueryParam('category', $category = false);
 
     $all = $new || $favorite || $shopped || $id ? false : true;
 
@@ -96,26 +97,71 @@ class ProductController extends HandleRequest {
           break;
       }
     }
+    if ($category && $id !== false) {
+      $statement = $this->db->prepare("SELECT c.id AS category_id
+                                        FROM product INNER JOIN product_category pc on product.id = pc.product_id 
+                                        INNER JOIN category c on pc.category_id = c.id
+                                        WHERE product.id = :id AND product.active != '0'");
+      $statement->execute(['id' => $id]);
+      $result = $statement->fetchAll();
+
+      if (is_array($result)) {
+        $myCategories = array(1, 2);
+
+        var_dump($myCategories);
+
+        switch ($order) {
+          case 'ASC':
+            $statement = $this->db->prepare("SELECT * 
+                                            FROM product INNER JOIN product_category pc on product.id = pc.product_id 
+                                            INNER JOIN category c on pc.category_id = c.id
+                                            WHERE product.active != '0' AND c.active != 0 AND c.id IN (" . $myCategories . ")
+                                            ORDER BY product.inserted_at ASC LIMIT " . $limit);
+            $statement->execute(['id' => $result->category_id]);
+            break;
+
+          case 'RAND':
+            $statement = $this->db->prepare("SELECT * 
+                                            FROM product INNER JOIN product_category pc on product.id = pc.product_id 
+                                            INNER JOIN category c on pc.category_id = c.id
+                                            WHERE product.active != '0' AND c.active != 0 AND c.id IN (" . $myCategories . ")
+                                            ORDER BY product.inserted_at ASC LIMIT " . $limit);
+            $statement->execute(['id' => $result->category_id]);
+            break;
+
+          default:
+            $statement = $this->db->prepare("SELECT * 
+                                            FROM product INNER JOIN product_category pc on product.id = pc.product_id 
+                                            INNER JOIN category c on pc.category_id = c.id
+                                            WHERE product.active != '0' AND c.active != 0 AND c.id IN (" . $myCategories . ")
+                                            ORDER BY product.inserted_at DESC LIMIT " . $limit);
+            $statement->execute();
+            break;
+        }
+      } else {
+        return $this->handleRequest($response, 400, 'Id product incorrect');
+      }
+    }
 
     if ($shopped) {
       switch ($order) {
         case 'ASC':
           $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
+                                        WHERE product.active != '0'
                                         ORDER BY product.inserted_at ASC LIMIT " . $limit);
           $statement->execute();
           break;
 
         case 'RAND':
           $statement = $this->db->prepare("SELECT * FROM product  
-                                        WHERE product.id = :id AND product.active != '0'
+                                        WHERE product.active != '0'
                                         ORDER BY product.inserted_at ASC LIMIT " . $limit);
           $statement->execute();
           break;
 
         default:
           $statement = $this->db->prepare("SELECT * FROM product INNER JOIN product_review pr on product.id = pr.product_id
-                                        WHERE product.id = :id AND product.active != '0' 
+                                        WHERE product.active != '0' 
                                         ORDER BY pr.stars DESC LIMIT " . $limit);
           $statement->execute();
           break;
