@@ -84,6 +84,7 @@ class CartController extends HandleRequest {
       foreach ($result as $index => $product) {
         $result = $this->getImagesProducts($this->db, $product, $result, $index);
         $result = $this->getCategoriesProducts($this->db, $product, $result, $index);
+        $result = $this->getReviewsProducts($this->db, $product, $result, $index);
       }
       return $this->handleRequest($response, 200, '', $result);
     } else {

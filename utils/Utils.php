@@ -81,4 +81,27 @@ class Utils {
     }
     return $result;
   }
+
+  /**
+   * @param $db
+   * @param $product
+   * @param $result
+   * @param $index
+   * @return mixed
+   */
+  function getReviewsProducts($db, $product, $result, $index) {
+    $statement = $db->prepare("SELECT product_review.id, product_review.title, product_review.stars, product_review.active, 
+                              product_review.inserted_at, product_review.updated_at, product_review.user_id, 
+                              product_review.product_id, product_review.message
+                              FROM product_review
+                              INNER JOIN product p on product_review.product_id = p.id
+                              WHERE product_review.active != 0 AND p.id = :id");
+    $statement->execute(['id' => $product['id']]);
+    $resultReview = $statement->fetchAll();
+
+    if (is_array($resultReview) and !empty($resultReview)) {
+      $result[$index]['reviews'] = $resultReview;
+    }
+    return $result;
+  }
 }
