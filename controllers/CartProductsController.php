@@ -84,13 +84,13 @@ class CartProductsController extends HandleRequest {
     foreach ($products as $index => $product) {
       $queryProduct = "SELECT quantity FROM product WHERE product.id = :id";
       $prepare      = $this->db->prepare($queryProduct);
-      $prepare->execute(['id' => $product->product_id]);
+      $prepare->execute(['id' => $product['product_id']]);
       $result = $prepare->fetchObject();
 
-      if (empty($result) AND is_object($result) AND $products->quantity >= $product->quantity) {
+      if (is_object($result) AND $result->quantity >= $product['quantity']) {
         $query   = "UPDATE cart_products SET quantity = :quantity WHERE id = :id";
         $prepare = $this->db->prepare($query);
-        $result = $prepare->execute(['id' => $product->id, 'quantity' => $product->quantity,]);
+        $result = $prepare->execute(['id' => $product['cart_product_id'], 'quantity' => $product['quantity'],]);
       } else {
         $success = false;
         break;
