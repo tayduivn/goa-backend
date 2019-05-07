@@ -70,29 +70,37 @@ class CartProductsController extends HandleRequest {
     return $this->postSendResponse($response, $result, 'Datos registrados');
   }
 
-  public function update(Request $request, Response $response, $args) {
+  public function updateQuantity(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $id           = $request_body['id'];
-    $quantity     = $request_body['quantity'];
-    $product_id   = $request_body['product_id'];
-    $cart_id      = $request_body['cart_id'];
+    $products     = $request_body['products'];
 
-    if (!isset($id) && !isset($quantity) && !isset($product_id) && !isset($cart_id)) {
+    $success = true;
+    $result  = true;
+
+    if (!isset($id) && !isset($products) && is_array($products)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $query   = "UPDATE cart_products SET quantity = :quantity, product_id = :product_id , cart_id = :cart_id 
-                WHERE id = :id";
-    $prepare = $this->db->prepare($query);
+    foreach ($products as $index => $product) {
+      $queryProduct = "SELECT quantity FROM product WHERE product.id = :id";
+      $prepare      = $this->db->prepare($queryProduct);
+      $prepare->execute(['id' => $product->product_id]);
+      $result = $prepare->fetchObject();
 
-    $result = $prepare->execute([
-                                  'id'         => $id,
-                                  'quantity'   => $quantity,
-                                  'product_id' => $product_id,
-                                  'cart_id'    => $cart_id,
-                                ]);
-
-    return $this->postSendResponse($response, $result, 'Datos actualizados');
+      if (empty($result) AND is_object($result) AND $products->quantity >= $product->quantity) {
+        $query   = "UPDATE cart_products SET quantity = :quantity WHERE id = :id";
+        $prepare = $this->db->prepare($query);
+        $result = $prepare->execute(['id' => $product->id, 'quantity' => $product->quantity,]);
+      } else {
+        $success = false;
+        break;
+      }
+    }
+    if ($success) {
+      return $this->postSendResponse($response, $result, 'Datos actualizados');
+    } else {
+      return $this->handleRequest($response, 409, 'The quantity is mayor in the store');
+    }
   }
 
   public function delete(Request $request, Response $response, $args) {

@@ -84,7 +84,7 @@ $app->group('/api', function () use ($app) {
 
   $app->get('/carts/products', 'App\Controller\CartProductsController:getAll');
   $app->post('/carts/products', 'App\Controller\CartProductsController:register');
-  $app->put('/carts/products', 'App\Controller\CartProductsController:update');
+  $app->put('/carts/products', 'App\Controller\CartProductsController:updateQuantity');
   $app->delete('/carts/products', 'App\Controller\CartProductsController:delete');
 });
 
