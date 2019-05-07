@@ -38,15 +38,17 @@ class OrderController extends HandleRequest {
                     WHERE `order`.id = :id AND `order`.active != '0' ORDER BY `order`.inserted_at ASC";
       $statement = $this->db->prepare($query);
       $statement->execute(['id' => $id]);
+    }
 
-    } elseif ($userId !== null && $cartId === null) {
+    if ($userId !== null && $cartId === null) {
       $query     = "SELECT * 
                     FROM `order`
                     WHERE `order`.active != '0' AND user_id = :userId AND status = :status";
       $statement = $this->db->prepare($query);
       $statement->execute(['status' => $status, 'userId' => $userId]);
+    }
 
-    } elseif ($userId !== null && $cartId !== null) {
+    if ($userId !== null && $cartId !== null) {
       $query     = "SELECT `order`.id, `order`.subtotal, `order`.total, `order`.status, `order`.active, 
                     `order`.inserted_at, `order`.updated_at, `order`.user_id, `order`.cart_id, 
                     c.id, c.status, c.active, c.inserted_at, c.updated_at, c.user_id, 
@@ -59,17 +61,7 @@ class OrderController extends HandleRequest {
       $result = $statement->fetchAll();
 
       if (is_array($result)) {
-        $query     = "SELECT id, quantity, inserted_at, updated_at, cart_id, product_id
-                    FROM cart_products WHERE cart_id = :cartId";
-        $statement = $this->db->prepare($query);
-        $statement->execute(['cartId' => $cartId]);
-        $resultCarts = $statement->fetchAll();
-
-        if (is_array($resultCarts) and !empty($resultCarts)) {
-          $result[0]['products'] = $resultCarts;
-        } else {
-          $result[0]['products'] = [];
-        }
+        $result = $this->getCartsProducts($this->db, $cartId, $result, 0);
         return $this->handleRequest($response, 200, '', $result);
       } else {
         return $this->handleRequest($response, 204, '', []);
