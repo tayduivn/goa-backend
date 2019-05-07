@@ -32,8 +32,8 @@ class Goa extends AbstractMigration {
     $this->tableProductReview();
     $this->tableCart();
     $this->tableCartProducts();
-    $this->tableOrder();
     $this->tableTransaction();
+    $this->tableOrder();
     $this->tableCategory();
     $this->tableProductCategory();
   }
@@ -155,6 +155,24 @@ class Goa extends AbstractMigration {
       ->save();
   }
 
+  public function tableTransaction() {
+    if ($this->hasTable('transaction')) {
+      $this->table('transaction')->drop()->save();
+    }
+    $this->table('transaction')
+      ->addColumn('code', 'string', ['limit' => 255])
+      ->addColumn('processor', 'string', ['limit' => 255])
+      ->addColumn('processor_trans_id', 'string', ['limit' => 255])
+      ->addColumn('cc_num', 'string', ['limit' => 255])
+      ->addColumn('cc_type', 'string', ['limit' => 255])
+      ->addColumn('active', 'boolean', ['default' => true])
+      ->addColumn('start_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addColumn('end_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addIndex(['id', 'code'], ['unique' => true])
+      ->save();
+  }
 
   /**
    * status: 'Pendiente', 'Enviando', 'Completado', 'Cancelado'
@@ -172,30 +190,11 @@ class Goa extends AbstractMigration {
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('user_id', 'integer')
       ->addColumn('cart_id', 'integer')
+      ->addColumn('transaction_id', 'integer')
       ->addIndex(['id', 'user_id'], ['unique' => true])
       ->addForeignKey('user_id', 'user', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->addForeignKey('cart_id', 'cart', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
-      ->save();
-  }
-
-  public function tableTransaction() {
-    if ($this->hasTable('transaction')) {
-      $this->table('transaction')->drop()->save();
-    }
-    $this->table('transaction')
-      ->addColumn('code', 'string', ['limit' => 255])
-      ->addColumn('processor', 'string', ['limit' => 255])
-      ->addColumn('processor_trans_id', 'string', ['limit' => 255])
-      ->addColumn('cc_num', 'string', ['limit' => 255])
-      ->addColumn('cc_type', 'string', ['limit' => 255])
-      ->addColumn('active', 'boolean', ['default' => true])
-      ->addColumn('start_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addColumn('end_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addColumn('order_id', 'integer')
-      ->addIndex(['id', 'code'], ['unique' => true])
-      ->addForeignKey('order_id', 'order', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
+      ->addForeignKey('transaction_id', 'transaction', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->save();
   }
 

@@ -56,9 +56,11 @@ class CartProductsController extends HandleRequest {
 
     if ($this->isAlreadyProduct($cart_id, $product_id)) {
       return $this->handleRequest($response, 409, 'This product already exist');
+    } else if ($this->validateQuantityProduct($product_id, $quantity)) {
+      return $this->handleRequest($response, 409, 'This quantity is mayor in the store');
     } else {
       $query   = "INSERT INTO cart_products (`quantity`, `cart_id`, `product_id`) 
-                  VALUES (:quantity, :cart_id, :product_id)";
+                    VALUES (:quantity, :cart_id, :product_id)";
       $prepare = $this->db->prepare($query);
       $result  = $prepare->execute([
                                      'quantity'   => $quantity,
@@ -82,15 +84,10 @@ class CartProductsController extends HandleRequest {
     }
 
     foreach ($products as $index => $product) {
-      $queryProduct = "SELECT quantity FROM product WHERE product.id = :id";
-      $prepare      = $this->db->prepare($queryProduct);
-      $prepare->execute(['id' => $product['product_id']]);
-      $result = $prepare->fetchObject();
-
-      if (is_object($result) AND $result->quantity >= $product['quantity']) {
+      if ($this->validateQuantityProduct($product['product_id'], $product['quantity'])) {
         $query   = "UPDATE cart_products SET quantity = :quantity WHERE id = :id";
         $prepare = $this->db->prepare($query);
-        $result = $prepare->execute(['id' => $product['cart_product_id'], 'quantity' => $product['quantity'],]);
+        $result  = $prepare->execute(['id' => $product['cart_product_id'], 'quantity' => $product['quantity'],]);
       } else {
         $success = false;
         break;
@@ -134,6 +131,19 @@ class CartProductsController extends HandleRequest {
     $statement = $this->db->prepare($query);
     $statement->execute(['cartId' => $cart_id, 'product_id' => $product_id]);
     return !empty($statement->fetchAll());
+  }
+
+  /**
+   * @param $productID
+   * @param $productQuantity
+   * @return bool
+   */
+  public function validateQuantityProduct($productID, $productQuantity) {
+    $queryProduct = "SELECT quantity FROM product WHERE product.id = :id";
+    $prepare      = $this->db->prepare($queryProduct);
+    $prepare->execute(['id' => $productID]);
+    $result = $prepare->fetchObject();
+    return is_object($result) AND $productQuantity > (int)$result->quantity;
   }
 
 }

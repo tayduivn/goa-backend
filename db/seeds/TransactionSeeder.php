@@ -4,12 +4,6 @@ use Phinx\Seed\AbstractSeed;
 
 class TransactionSeeder extends AbstractSeed {
 
-  public function getDependencies() {
-    return [
-      'OrderSeeder',
-    ];
-  }
-
   /**
    * Run Method.
    *
@@ -26,7 +20,6 @@ class TransactionSeeder extends AbstractSeed {
         'processor_trans_id' => '002',
         'cc_num'             => '2525',
         'cc_type'            => 'Credit Card',
-        'order_id'           => '1',
       ]
     ];
     $this->table('transaction')->insert($data)->save();

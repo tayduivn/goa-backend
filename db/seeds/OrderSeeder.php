@@ -8,6 +8,7 @@ class OrderSeeder extends AbstractSeed {
     return [
       'UserSeeder',
       'CartSeeder',
+      'TransactionSeeder',
     ];
   }
 
@@ -26,6 +27,7 @@ class OrderSeeder extends AbstractSeed {
         'total'    => 800.3,
         'user_id'  => 1,
         'cart_id'  => 1,
+        'transaction_id'  => 1,
       ]
     ];
     $this->table('order')->insert($data)->save();
