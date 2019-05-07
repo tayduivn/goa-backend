@@ -98,7 +98,7 @@ class OrderController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    if ($this->isAlreadyCart($cart_id)) {
+    if ($this->isAlreadyCart($cart_id, $this->db)) {
       return $this->handleRequest($response, 409, 'Cart is already cart');
     } else {
       $query   = "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`) VALUES(:subtotal, :total, :user_id, :cart_id)";
@@ -126,7 +126,7 @@ class OrderController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    if ($this->isAlreadyCart($cart_id)) {
+    if ($this->isAlreadyCart($cart_id, $this->db)) {
       return $this->handleRequest($response, 409, 'Is already cart');
     } else {
       $query   = "UPDATE `order` SET subtotal = :subtotal, total = :total, user_id = :user_id, cart_id = :cart_id
@@ -165,17 +165,6 @@ class OrderController extends HandleRequest {
     } else {
       return $this->handleRequest($response, 404, "Información no encontrada");
     }
-  }
-
-  /**
-   * @param $cart_id
-   * @return string
-   */
-  public function isAlreadyCart($cart_id) {
-    $query     = "SELECT * FROM `order` WHERE cart_id = :cartId";
-    $statement = $this->db->prepare($query);
-    $statement->execute(['cartId' => $cart_id]);
-    return !empty($statement->fetchAll());
   }
 
 }

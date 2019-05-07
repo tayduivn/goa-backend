@@ -37,32 +37,67 @@ class TransactionController extends HandleRequest {
   }
 
   public function register(Request $request, Response $response, $args) {
-    $request_body       = $request->getParsedBody();
+    $request_body = $request->getParsedBody();
+
+    $cart_id = $request_body['cart_id'];
+
     $code               = $request_body['code'];
     $processor          = $request_body['processor'];
     $processor_trans_id = $request_body['processor_trans_id'];
     $cc_num             = $request_body['cc_num'];
     $cc_type            = $request_body['cc_type'];
-    $order_id           = $request_body['order_id'];
+    $start_date         = $request_body['start_date'];
+    $end_date           = $request_body['end_date'];
 
-    if (!isset($code) and !isset($processor) and !isset($processor_trans_id) and !isset($cc_num) and !isset($cc_type) and !isset($order_id)) {
+    $subtotal = $request_body['subtotal'];
+    $total    = $request_body['total'];
+    $user_id  = $request_body['user_id'];
+
+    if (!isset($cart_id) AND !isset($subtotal) AND !isset($total) AND !isset($user_id) AND !isset($code)
+      AND !isset($processor) AND !isset($processor_trans_id) AND !isset($cc_num) AND !isset($cc_type)
+      AND !isset($start_date) AND !isset($end_date)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`, `cc_num`, `cc_type`, `order_id`) 
-      VALUES (:code, :processor, :processor_trans_id, :cc_num, :cc_type, :order_id)"
-    );
+    /* TODO: add date, maybe? */
+    /* TODO: how to make rollback fail query in PDO */
+    $query   = "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`, `cc_num`, `cc_type`) 
+                VALUES (:code, :processor, :processor_trans_id, :cc_num, :cc_type)";
+    $prepare = $this->db->prepare($query);
     $result  = $prepare->execute([
                                    'code'               => $code,
                                    'processor'          => $processor,
                                    'processor_trans_id' => $processor_trans_id,
                                    'cc_num'             => $cc_num,
                                    'cc_type'            => $cc_type,
-                                   'order_id'           => $order_id,
                                  ]);
 
-    return $this->postSendResponse($response, $result, 'Datos registrados');
+    $transaction_id = $this->db->lastInsertId();
+
+    if ($result) {
+      $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
+      $result  = $prepare->execute(['id' => $cart_id, 'status' => 'checkout',]);
+
+      if ($result) {
+        if ($this->isAlreadyCart($cart_id, $this->db)) {
+          return $this->handleRequest($response, 409, 'Cart is already cart');
+        } else {
+          $query   = "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`, `transaction_id`) 
+                      VALUES(:subtotal, :total, :user_id, :cart_id, :transaction_id)";
+          $prepare = $this->db->prepare($query);
+          $result  = $prepare->execute([
+                                         'subtotal'       => $subtotal,
+                                         'total'          => $total,
+                                         'user_id'        => $user_id,
+                                         'cart_id'        => $cart_id,
+                                         'transaction_id' => $transaction_id,
+                                       ]);
+          return $this->postSendResponse($response, $result, 'Datos registrados');
+        }
+      }
+    }
+
+    return $this->handleRequest($response, 400);
   }
 
   public function update(Request $request, Response $response, $args) {
@@ -72,17 +107,15 @@ class TransactionController extends HandleRequest {
     $processor_trans_id = $request_body['processor_trans_id'];
     $cc_num             = $request_body['cc_num'];
     $cc_type            = $request_body['cc_type'];
-    $order_id           = $request_body['order_id'];
 
-    if (!isset($code) and !isset($processor) and !isset($processor_trans_id) and !isset($cc_num) and !isset($cc_type) and !isset($order_id)) {
+    if (!isset($code) and !isset($processor) and !isset($processor_trans_id) and !isset($cc_num) and !isset($cc_type)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     $prepare = $this->db->prepare(
       "UPDATE transaction 
-        SET code = :code, processor = :processor, processor_trans_id = :processor_trans_id, cc_num = :cc_num, 
-            cc_type = :cc_type, order_id = :order_id
-      WHERE id = :id"
+        SET code = :code, processor = :processor, processor_trans_id = :processor_trans_id, cc_num = :cc_num, cc_type = :cc_type
+        WHERE id = :id"
     );
 
     $result = $prepare->execute([
@@ -92,7 +125,6 @@ class TransactionController extends HandleRequest {
                                   'processor_trans_id' => $processor_trans_id,
                                   'cc_num'             => $cc_num,
                                   'cc_type'            => $cc_type,
-                                  'order_id'           => $order_id,
                                 ]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');

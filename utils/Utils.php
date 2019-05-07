@@ -128,4 +128,15 @@ class Utils {
     }
     return $result;
   }
+
+  /**
+   * @param $cart_id
+   * @return string
+   */
+  public function isAlreadyCart($cart_id, $db) {
+    $query     = "SELECT * FROM `order` WHERE cart_id = :cartId";
+    $statement = $db->prepare($query);
+    $statement->execute(['cartId' => $cart_id]);
+    return !empty($statement->fetchAll());
+  }
 }

@@ -79,7 +79,7 @@ class CartProductsController extends HandleRequest {
     $success = true;
     $result  = true;
 
-    if (!isset($id) && !isset($products) && is_array($products)) {
+    if (!isset($products) && is_array($products)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
