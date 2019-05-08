@@ -49,7 +49,7 @@ class OrderController extends HandleRequest {
     }
 
     if ($userId !== null && $cartId !== null) {
-      $query     = "SELECT `order`.id, `order`.subtotal, `order`.total, `order`.status, `order`.active, 
+      $query     = "SELECT `order`.id AS order_id, `order`.subtotal, `order`.total, `order`.status AS order_status, `order`.active, 
                     `order`.inserted_at, `order`.updated_at, `order`.user_id, `order`.cart_id, 
                     c.id, c.status, c.active, c.inserted_at, c.updated_at, c.user_id, 
                     u.id, u.email, u.first_name, u.last_name, u.password, u.address, u.phone, u.active, 
@@ -109,30 +109,14 @@ class OrderController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $id           = $request_body['id'];
-    $subtotal     = $request_body['subtotal'];
-    $total        = $request_body['total'];
-    $user_id      = $request_body['user_id'];
-    $cart_id      = $request_body['cart_id'];
+    $status       = $request_body['status'];
 
-    if (!isset($id) && !isset($subtotal) && !isset($total) && !isset($user_id) && !isset($cart_id)) {
+    if (!isset($id) && !isset($status)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    if ($this->isAlreadyCart($cart_id, $this->db)) {
-      return $this->handleRequest($response, 409, 'Is already cart');
-    } else {
-      $query   = "UPDATE `order` SET subtotal = :subtotal, total = :total, user_id = :user_id, cart_id = :cart_id
-                WHERE id = :id";
-      $prepare = $this->db->prepare($query);
-
-      $result = $prepare->execute([
-                                    'id'       => $id,
-                                    'subtotal' => $subtotal,
-                                    'total'    => $total,
-                                    'user_id'  => $user_id,
-                                    'cart_id'  => $cart_id,
-                                  ]);
-    }
+    $prepare = $this->db->prepare("UPDATE `order` SET status = :status WHERE id = :id");
+    $result = $prepare->execute(['id' => $id, 'status' => $status,]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
