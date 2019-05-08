@@ -23,13 +23,14 @@ class ProductController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $order    = $request->getQueryParam('order', $default = 'DESC');
-    $limit    = $request->getQueryParam('limit', $default = '20'); /* TODO: how to infinite limit */
-    $id       = $request->getQueryParam('id', $default = false);
-    $favorite = $request->getQueryParam('favorite', $default = false);
-    $new      = $request->getQueryParam('new', $default = false);
-    $shopped  = $request->getQueryParam('shopped', $default = false);
-    $category = $request->getQueryParam('category', $category = false);
+    $order        = $request->getQueryParam('order', $default = 'DESC');
+    $limit        = $request->getQueryParam('limit', $default = '20');
+    $id           = $request->getQueryParam('id', $default = false);
+    $favorite     = $request->getQueryParam('favorite', $default = false);
+    $new          = $request->getQueryParam('new', $default = false);
+    $shopped      = $request->getQueryParam('shopped', $default = false);
+    $category     = $request->getQueryParam('category', $category = false);
+    $categoryName = $request->getQueryParam('categoryName');
 
     $all = $new || $favorite || $shopped || $id ? false : true;
 
@@ -73,6 +74,38 @@ class ProductController extends HandleRequest {
       }
     }
 
+    if ($categoryName) {
+      switch ($order) {
+        case 'ASC':
+          $query     = "SELECT * 
+                        FROM product INNER JOIN product_category pc on product.id = pc.product_id
+                        INNER JOIN category c on pc.category_id = c.id
+                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        ORDER BY product.inserted_at ASC LIMIT " . $limit;
+          $statement = $this->db->prepare($query);
+          break;
+
+        case 'RAND':
+          $query     = "SELECT * 
+                        FROM product INNER JOIN product_category pc on product.id = pc.product_id
+                        INNER JOIN category c on pc.category_id = c.id
+                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        ORDER BY RAND() LIMIT " . $limit;
+          $statement = $this->db->prepare($query);
+          break;
+
+        default:
+          $query     = "SELECT * 
+                        FROM product INNER JOIN product_category pc on product.id = pc.product_id
+                        INNER JOIN category c on pc.category_id = c.id
+                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        ORDER BY product.inserted_at DESC LIMIT " . $limit;
+          $statement = $this->db->prepare($query);
+          break;
+      }
+      $statement->execute();
+    }
+
     if ($new) {
       switch ($order) {
         case 'ASC':
@@ -109,7 +142,7 @@ class ProductController extends HandleRequest {
       if (is_array($result)) {
         $myCategories = '';
         foreach ($result as $index => $item) {
-          if(!next($result)) {
+          if (!next($result)) {
             $myCategories = $myCategories . $result[$index]['category_id'];
           } else {
             $myCategories = $myCategories . $result[$index]['category_id'] . ',';
@@ -122,7 +155,7 @@ class ProductController extends HandleRequest {
                                             FROM product INNER JOIN product_category pc on product.id = pc.product_id
                                             WHERE product.active != 0 AND pc.active != 0 AND pc.category_id IN ( " . $myCategories . ") 
                                             AND product.id != :id GROUP BY product.id
-                                            ORDER BY product.inserted_at ASC LIMIT " . $limit );
+                                            ORDER BY product.inserted_at ASC LIMIT " . $limit);
             $statement->execute(['id' => $id]);
             break;
 
@@ -131,7 +164,7 @@ class ProductController extends HandleRequest {
                                             FROM product INNER JOIN product_category pc on product.id = pc.product_id
                                             WHERE product.active != 0 AND pc.active != 0 AND pc.category_id IN ( " . $myCategories . ") 
                                             AND product.id != :id GROUP BY product.id
-                                            ORDER BY RAND() LIMIT " . $limit );
+                                            ORDER BY RAND() LIMIT " . $limit);
             $statement->execute(['id' => $id]);
             break;
 
@@ -140,7 +173,7 @@ class ProductController extends HandleRequest {
                                             FROM product INNER JOIN product_category pc on product.id = pc.product_id
                                             WHERE product.active != 0 AND pc.active != 0 AND pc.category_id IN ( " . $myCategories . ") 
                                             AND product.id != :id GROUP BY product.id
-                                            ORDER BY product.inserted_at DESC LIMIT " . $limit );
+                                            ORDER BY product.inserted_at DESC LIMIT " . $limit);
             $statement->execute(['id' => $id]);
             break;
         }
