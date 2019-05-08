@@ -24,7 +24,8 @@ class ProductController extends HandleRequest {
 
   public function getAll(Request $request, Response $response, $args) {
     $order        = $request->getQueryParam('order', $default = 'DESC');
-    $limit        = $request->getQueryParam('limit', $default = '20');
+    $limit        = $request->getQueryParam('limit', $default = '12');
+    $offset       = $request->getQueryParam('offset', $offset = '0');
     $id           = $request->getQueryParam('id', $default = false);
     $favorite     = $request->getQueryParam('favorite', $default = false);
     $new          = $request->getQueryParam('new', $default = false);
@@ -32,7 +33,7 @@ class ProductController extends HandleRequest {
     $category     = $request->getQueryParam('category', $category = false);
     $categoryName = $request->getQueryParam('categoryName');
 
-    $all = $new || $favorite || $shopped || $id ? false : true;
+    $all = $new || $favorite || $shopped || $id || $categoryName ? false : true;
 
     if ($favorite) {
       switch ($order) {
@@ -75,35 +76,53 @@ class ProductController extends HandleRequest {
     }
 
     if ($categoryName) {
+      $categoryName = explode(",", $categoryName);
+      $in           = str_repeat('?,', count($categoryName) - 1) . '?';
+
       switch ($order) {
         case 'ASC':
-          $query     = "SELECT * 
+          $query     = "SELECT product.id AS product_id, product.sku, product.name, product.description_short, 
+                        product.description_one, product.description_two, product.preparation, 
+                        product.regular_price, product.nutrition, product.quantity, product.active, 
+                        product.inserted_at, product.updated_at, product.user_id, 
+                        pc.id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
+                        c.id, c.name, c.active, c.inserted_at, c.updated_at 
                         FROM product INNER JOIN product_category pc on product.id = pc.product_id
                         INNER JOIN category c on pc.category_id = c.id
-                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        WHERE c.name IN ($in)
                         ORDER BY product.inserted_at ASC LIMIT " . $limit;
           $statement = $this->db->prepare($query);
           break;
 
         case 'RAND':
-          $query     = "SELECT * 
+          $query     = "SELECT product.id AS product_id, product.sku, product.name, product.description_short, 
+                        product.description_one, product.description_two, product.preparation, 
+                        product.regular_price, product.nutrition, product.quantity, product.active, 
+                        product.inserted_at, product.updated_at, product.user_id, 
+                        pc.id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
+                        c.id, c.name, c.active, c.inserted_at, c.updated_at 
                         FROM product INNER JOIN product_category pc on product.id = pc.product_id
                         INNER JOIN category c on pc.category_id = c.id
-                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        WHERE c.name IN ($in)
                         ORDER BY RAND() LIMIT " . $limit;
           $statement = $this->db->prepare($query);
           break;
 
         default:
-          $query     = "SELECT * 
+          $query     = "SELECT product.id AS product_id, product.sku, product.name, product.description_short, 
+                        product.description_one, product.description_two, product.preparation, 
+                        product.regular_price, product.nutrition, product.quantity, product.active, 
+                        product.inserted_at, product.updated_at, product.user_id, 
+                        pc.id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
+                        c.id, c.name, c.active, c.inserted_at, c.updated_at 
                         FROM product INNER JOIN product_category pc on product.id = pc.product_id
                         INNER JOIN category c on pc.category_id = c.id
-                        WHERE product.active != '0' AND c.active != '0' AND c.name IN ( " . $categoryName . ")
+                        WHERE c.name IN ($in)
                         ORDER BY product.inserted_at DESC LIMIT " . $limit;
           $statement = $this->db->prepare($query);
           break;
       }
-      $statement->execute();
+      $statement->execute($categoryName);
     }
 
     if ($new) {
