@@ -25,13 +25,17 @@ class ProductController extends HandleRequest {
   public function getAll(Request $request, Response $response, $args) {
     $order        = $request->getQueryParam('order', $default = 'DESC');
     $limit        = $request->getQueryParam('limit', $default = '12');
-    $offset       = $request->getQueryParam('offset', $offset = '0');
+    $page         = $request->getQueryParam('page', $page = '1');
     $id           = $request->getQueryParam('id', $default = false);
     $favorite     = $request->getQueryParam('favorite', $default = false);
     $new          = $request->getQueryParam('new', $default = false);
     $shopped      = $request->getQueryParam('shopped', $default = false);
     $category     = $request->getQueryParam('category', $category = false);
     $categoryName = $request->getQueryParam('categoryName');
+
+    $skip = ($page - 1) * $limit;
+    $lastPage = 0;
+    $count = 20;
 
     $all = $new || $favorite || $shopped || $id || $categoryName ? false : true;
 
@@ -284,9 +288,11 @@ class ProductController extends HandleRequest {
           break;
 
         default:
-          $statement = $this->db->prepare("SELECT * FROM product 
-                                        WHERE product.active != '0' ORDER BY product.inserted_at DESC LIMIT " . $limit);
-          $statement->execute();
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' ORDER BY product.inserted_at DESC LIMIT " . $skip . "," . $limit;
+          $statement = $this->db->prepare($query);
+          $statement->execute(['limit' => $limit, 'skip' => $skip]);
+          $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
           break;
       }
     }
@@ -299,7 +305,8 @@ class ProductController extends HandleRequest {
         $result = $this->getCategoriesProducts($this->db, $product, $result, $index);
         $result = $this->getReviewsProducts($this->db, $product, $result, $index);
       }
-      return $this->handleRequest($response, 200, '', $result);
+      $pagination = ['count' => $count, 'limit' => $limit, 'lastPage' => $lastPage, 'page' => $page];
+      return $this->handleRequest($response, 200, '', $result, $pagination);
     } else {
       return $this->handleRequest($response, 204, '', []);
     }

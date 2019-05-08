@@ -47,15 +47,17 @@ class HandleRequest extends Utils {
   /**
    * @param Response $res
    * @param int      $status
-   * @param string   $body
    * @param string   $message
+   * @param string   $body
+   * @param string   $pagination
    * @return array
    */
-  public function handleRequest(Response $res, $status, $message = '', $body = '') {
+  public function handleRequest(Response $res, $status, $message = '', $body = '', $pagination = '') {
     if ($status === 200) {
       return $res->withJson([
                               'status'  => 200,
                               'data'    => $body,
+                              'pagination'    => $pagination,
                               'message' => $message ?: 'Success',
                             ], 200);
 
