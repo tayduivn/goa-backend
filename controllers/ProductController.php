@@ -32,12 +32,13 @@ class ProductController extends HandleRequest {
     $shopped      = $request->getQueryParam('shopped', $default = false);
     $category     = $request->getQueryParam('category', $category = false);
     $categoryName = $request->getQueryParam('categoryName');
+    $productName  = $request->getQueryParam('productName');
 
     $skip     = ($page - 1) * $limit;
     $lastPage = 0;
     $count    = 0;
 
-    $all = $new || $favorite || $shopped || $id || $categoryName ? false : true;
+    $all = $new || $favorite || $shopped || $id || $categoryName || $productName ? false : true;
 
     if ($favorite) {
       switch ($order) {
@@ -92,9 +93,8 @@ class ProductController extends HandleRequest {
                         product.description_one, product.description_two, product.preparation, 
                         product.regular_price, product.nutrition, product.quantity, product.active, 
                         product.inserted_at, product.updated_at, product.user_id, 
-                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
-                        FROM product INNER JOIN product_category pc on product.id = pc.product_id
-                        INNER JOIN category c on pc.category_id = c.id
+                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id
+                        FROM product INNER JOIN product_category pc on product.id = pc.product_id INNER JOIN category c on pc.category_id = c.id
                         WHERE c.name IN ($in)
                         ORDER BY product.inserted_at ASC LIMIT " . $limit;
           $statement = $this->db->prepare($query);
@@ -105,9 +105,8 @@ class ProductController extends HandleRequest {
                         product.description_one, product.description_two, product.preparation, 
                         product.regular_price, product.nutrition, product.quantity, product.active, 
                         product.inserted_at, product.updated_at, product.user_id, 
-                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
-                        FROM product INNER JOIN product_category pc on product.id = pc.product_id
-                        INNER JOIN category c on pc.category_id = c.id
+                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id
+                        FROM product INNER JOIN product_category pc on product.id = pc.product_id INNER JOIN category c on pc.category_id = c.id
                         WHERE c.name IN ($in)
                         ORDER BY RAND() LIMIT " . $limit;
           $statement = $this->db->prepare($query);
@@ -118,7 +117,7 @@ class ProductController extends HandleRequest {
                         product.description_one, product.description_two, product.preparation, 
                         product.regular_price, product.nutrition, product.quantity, product.active, 
                         product.inserted_at, product.updated_at, product.user_id, 
-                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id, 
+                        pc.id AS product_category_id, pc.active, pc.inserted_at, pc.updated_at, pc.category_id, pc.product_id
                         FROM product INNER JOIN product_category pc on product.id = pc.product_id
                         INNER JOIN category c on pc.category_id = c.id
                         WHERE c.name IN ($in)
@@ -304,43 +303,65 @@ class ProductController extends HandleRequest {
       }
     }
 
-    if ($all) {
+    if ($productName) {
       switch ($order) {
         case 'ASC':
-          $statement = $this->db->prepare("SELECT count(product.id) FROM product WHERE product.active != '0'");
-          $statement->execute();
-          $result = $statement->fetchAll();
-
-          $count = $result[0]["count(product.id)"];
-
-          $query     = $this->db->prepare("SELECT * FROM product 
-                                        WHERE product.active != '0' ORDER BY product.inserted_at ASC LIMIT " . $limit);
+          $query1    = "SELECT count(product.id) FROM product WHERE product.active != '0' AND product.name LIKE '%$productName%'";
+          $count     = $this->getCountProducts($query1);
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' AND product.name LIKE '%$productName%'
+                        ORDER BY product.inserted_at ASC LIMIT " . $limit;
           $statement = $this->db->prepare($query);
           $statement->execute(['limit' => $limit, 'skip' => $skip]);
           $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
           break;
 
         case 'RAND':
-          $statement = $this->db->prepare("SELECT count(product.id) FROM product WHERE product.active != '0'");
-          $statement->execute();
-          $result = $statement->fetchAll();
-
-          $count = $result[0]["count(product.id)"];
-
-          $query     = $this->db->prepare("SELECT * FROM product 
-                                        WHERE product.active != '0' ORDER BY RAND() LIMIT " . $limit);
+          $query1    = "SELECT count(product.id) FROM product WHERE product.active != '0' AND product.name LIKE '%$productName%'";
+          $count     = $this->getCountProducts($query1);
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' AND product.name LIKE '%$productName%' 
+                        ORDER BY RAND() LIMIT " . $limit;
           $statement = $this->db->prepare($query);
           $statement->execute(['limit' => $limit, 'skip' => $skip]);
           $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
           break;
 
         default:
-          $statement = $this->db->prepare("SELECT count(product.id) FROM product WHERE product.active != '0'");
-          $statement->execute();
-          $result = $statement->fetchAll();
+          $query1    = "SELECT count(product.id) FROM product WHERE product.active != '0' AND product.name LIKE '%$productName%'";
+          $count     = $this->getCountProducts($query1);
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' AND product.name LIKE '%$productName%' 
+                        ORDER BY product.inserted_at DESC LIMIT " . $skip . "," . $limit;
+          $statement = $this->db->prepare($query);
+          $statement->execute(['limit' => $limit, 'skip' => $skip]);
+          $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
+          break;
+      }
+    }
 
-          $count = $result[0]["count(product.id)"];
+    if ($all) {
+      switch ($order) {
+        case 'ASC':
+          $count     = $this->getCountProducts("SELECT count(product.id) FROM product WHERE product.active != '0'");
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' ORDER BY product.inserted_at ASC LIMIT " . $limit;
+          $statement = $this->db->prepare($query);
+          $statement->execute(['limit' => $limit, 'skip' => $skip]);
+          $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
+          break;
 
+        case 'RAND':
+          $count     = $this->getCountProducts("SELECT count(product.id) FROM product WHERE product.active != '0'");
+          $query     = "SELECT * FROM product 
+                        WHERE product.active != '0' ORDER BY RAND() LIMIT " . $limit;
+          $statement = $this->db->prepare($query);
+          $statement->execute(['limit' => $limit, 'skip' => $skip]);
+          $lastPage = (ceil($count / $limit) == 0 ? 1 : ceil($count / $limit));
+          break;
+
+        default:
+          $count     = $this->getCountProducts("SELECT count(product.id) FROM product WHERE product.active != '0'");
           $query     = "SELECT * FROM product 
                         WHERE product.active != '0' ORDER BY product.inserted_at DESC LIMIT " . $skip . "," . $limit;
           $statement = $this->db->prepare($query);
@@ -474,6 +495,19 @@ class ProductController extends HandleRequest {
     $statement = $this->db->prepare("SELECT name FROM product WHERE name = :name");
     $statement->execute(['name' => $name]);
     return empty($statement->fetchAll());
+  }
+
+  /**
+   * @param $query
+   * @return array
+   */
+  public function getCountProducts($query) {
+    $statement = $this->db->prepare($query);
+    $statement->execute();
+    $result = $statement->fetchAll();
+
+    $count = $result[0]["count(product.id)"];
+    return $count;
   }
 
 }
