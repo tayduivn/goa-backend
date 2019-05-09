@@ -30,9 +30,9 @@ $app->group('/api', function () use ($app) {
                                  ], 200);
     });
 
+    $app->post('/users/forgot', 'App\Controller\UserController:forgot');
     $app->post('/users/login', 'App\Controller\UserController:login');
     $app->post('/users/register', 'App\Controller\UserController:register');
-    $app->post('/users/forgot', 'App\Controller\UserController:forgot');
 
     $app->get('/products', 'App\Controller\ProductController:getAll');
 

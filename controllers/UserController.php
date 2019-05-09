@@ -125,18 +125,17 @@ class UserController extends HandleRequest {
     $email        = $request_body['email'];
 
     if (!isset($email))
-      return $this->handleRequest($response, 400, 'Correo incorrecto');
+      return $this->handleRequest($response, 400, 'Email incorrect');
 
     $statement = $this->db->prepare("SELECT * FROM user WHERE email= :email");
     $statement->bindParam("email", $email);
     $statement->execute();
     $user = $statement->fetchObject();
 
-    if (!$user) {
-      return $this->handleRequest($response, 400, 'Este correo no existe');
-    }
+    if (!$user)
+      return $this->handleRequest($response, 400, 'This email not exist');
 
-    $this->sendEmail('Recuperar clave', 'Su clave es: ', $args['email']);
+    $this->sendEmail('Recover password', 'Your password is: ', $args['email']);
 
     return $this->handleRequest($response, 201);
   }
