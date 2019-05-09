@@ -111,11 +111,10 @@ class TransactionController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE transaction 
-        SET code = :code, processor = :processor, processor_trans_id = :processor_trans_id, cc_num = :cc_num, cc_type = :cc_type
-        WHERE id = :id"
-    );
+    $query   = "UPDATE transaction 
+                SET code = :code, processor = :processor, processor_trans_id = :processor_trans_id, cc_num = :cc_num, cc_type = :cc_type
+                WHERE id = :id";
+    $prepare = $this->db->prepare($query);
 
     $result = $prepare->execute([
                                   'id'                 => $id,
@@ -154,7 +153,7 @@ class TransactionController extends HandleRequest {
 
   /**
    * @param $cart_id
-   * @return array
+   * @return bool
    */
   public function updateCart($cart_id) {
     $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
@@ -169,6 +168,8 @@ class TransactionController extends HandleRequest {
       $statement->execute(['id' => $cart_id]);
       $result = $statement->fetchAll();
 
+      $userId = $result[0]['user_id'];
+
       if (!empty($result) && is_array($result)) {
 
         foreach ($result as $index => $cartProduct) {
@@ -181,12 +182,25 @@ class TransactionController extends HandleRequest {
 
             $prepare = $this->db->prepare("UPDATE product SET quantity = :quantity WHERE id = :id");
             $result  = $prepare->execute(['id' => $cartProduct["product_id"], 'quantity' => $quantity,]);
+
+            if ($result) {
+              $prepare = $this->db->prepare("INSERT INTO cart (user_id) VALUES (:user_id)");
+              $result  = $prepare->execute(['user_id' => $userId]);
+              return $result;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
           }
         }
+      } else {
+        return false;
       }
+    } else {
+      return false;
     }
-
-    return $result;
+    return false;
   }
 
 }
