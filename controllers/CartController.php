@@ -84,7 +84,7 @@ class CartController extends HandleRequest {
 
     if (is_array($result)) {
       foreach ($result as $indexCart => $cart) {
-        $result   = $this->getCartsProducts($this->db, $cart['cart_id'], $result, $indexCart);
+        $result = $this->getCartsProducts($this->db, $cart['cart_id'], $result, $indexCart);
         if (isset($result[$indexCart]['products']) AND is_array($result[$indexCart]['products'])) {
           $products = $result[$indexCart]['products'];
           foreach ($products as $index => $product) {

@@ -137,9 +137,8 @@ class Utils {
    * @param $db
    * @return string
    */
-  public function isAlreadyCart($cart_id, $db) {
-    $query     = "SELECT * FROM `order` WHERE cart_id = :cartId";
-    $statement = $db->prepare($query);
+  public function isAlreadyCartOrder($cart_id, $db) {
+    $statement = $db->prepare("SELECT * FROM `order` WHERE cart_id = :cartId");
     $statement->execute(['cartId' => $cart_id]);
     return !empty($statement->fetchAll());
   }

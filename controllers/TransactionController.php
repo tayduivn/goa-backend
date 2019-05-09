@@ -75,12 +75,11 @@ class TransactionController extends HandleRequest {
     $transaction_id = $this->db->lastInsertId();
 
     if ($result) {
-      $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
-      $result  = $prepare->execute(['id' => $cart_id, 'status' => 'checkout',]);
+      $result = $this->updateCart($cart_id);
 
       if ($result) {
-        if ($this->isAlreadyCart($cart_id, $this->db)) {
-          return $this->handleRequest($response, 409, 'Cart is already cart');
+        if ($this->isAlreadyCartOrder($cart_id, $this->db)) {
+          return $this->handleRequest($response, 409, 'Cart is already exist');
         } else {
           $query   = "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`, `transaction_id`) 
                       VALUES(:subtotal, :total, :user_id, :cart_id, :transaction_id)";
@@ -151,6 +150,47 @@ class TransactionController extends HandleRequest {
     } else {
       return $this->handleRequest($response, 404, "Información no encontrada");
     }
+  }
+
+  /**
+   * @param $cart_id
+   * @return array
+   */
+  public function updateCart($cart_id) {
+    $prepare = $this->db->prepare("UPDATE cart SET status = :status WHERE id = :id");
+    $result  = $prepare->execute(['id' => $cart_id, 'status' => 'checkout',]);
+
+    var_dump($result);
+
+    if ($result) {
+      $query     = "SELECT cart.id, cart.status, cart.active, cart.inserted_at, cart.updated_at, cart.user_id, 
+                    cp.id, cp.quantity, cp.inserted_at, cp.updated_at, cp.cart_id, cp.product_id
+                    FROM cart INNER JOIN cart_products cp on cart.id = cp.cart_id
+                    WHERE cart.active != '0' AND cart.id = :id";
+      $statement = $this->db->prepare($query);
+      $statement->execute(['id' => $cart_id]);
+      $result = $statement->fetchAll();
+
+      if (!empty($result) && is_array($result)) {
+
+        foreach ($result as $index => $cartProduct) {
+          $statement = $this->db->prepare("SELECT * FROM product WHERE product.active != '0' AND product.id = :id");
+          $statement->execute(['id' => $cartProduct["product_id"]]);
+          $resultProduct = $statement->fetchObject();
+
+          if (!empty($resultProduct) && is_object($resultProduct)) {
+            $quantity = $resultProduct->quantity - $cartProduct["quantity"];
+
+            var_dump($quantity);
+
+            $prepare = $this->db->prepare("UPDATE product SET quantity = :quantity WHERE id = :id");
+            $result  = $prepare->execute(['id' => $cartProduct["product_id"], 'quantity' => $quantity,]);
+          }
+        }
+      }
+    }
+
+    return $result;
   }
 
 }

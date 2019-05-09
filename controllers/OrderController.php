@@ -90,7 +90,7 @@ class OrderController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    if ($this->isAlreadyCart($cart_id, $this->db)) {
+    if ($this->isAlreadyCartOrder($cart_id, $this->db)) {
       return $this->handleRequest($response, 409, 'Cart is already cart');
     } else {
       $query   = "INSERT INTO `order` (`subtotal`, `total`, `user_id`, `cart_id`) VALUES(:subtotal, :total, :user_id, :cart_id)";
