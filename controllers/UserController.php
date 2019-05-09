@@ -61,7 +61,8 @@ class UserController extends HandleRequest {
     $request_body = $request->getParsedBody();
     $statement    = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
                                         user.address, user.phone, user.active, user.role_id, 
-                                        user.inserted_at, user.updated_at, r.id, r.name, r.active, r.inserted_at, r.updated_at 
+                                        user.inserted_at, user.updated_at, 
+                                        r.id AS role_id, r.name, r.active, r.inserted_at AS role_inserted, r.updated_at AS role_updated 
                                         FROM user INNER JOIN role r on user.role_id = r.id WHERE email= :email AND user.active != 0");
     $statement->bindParam("email", $request_body['email']);
     $statement->execute();
@@ -175,7 +176,7 @@ class UserController extends HandleRequest {
     $email        = $request_body['email'];
 
     $statement = $this->db->prepare("SELECT * FROM user WHERE email= :email");
-    $statement->execute(["email", $email]);
+    $statement->execute(["email" => $email]);
     $user = $statement->fetchObject();
 
     if (!$user) {
