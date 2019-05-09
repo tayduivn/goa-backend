@@ -79,12 +79,10 @@ class ImageController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare("
-      UPDATE product_image SET image = :image WHERE id = :idimage
-    ");
+    $prepare = $this->db->prepare("UPDATE product_image SET image = :image WHERE id = :idimage");
     $result  = $prepare->execute([
-                                   'idimage'    => $idimage,
-                                   'image'      => $this->getBaseURL() . "/src/uploads/" . $filename,
+                                   'idimage' => $idimage,
+                                   'image'   => $this->getBaseURL() . "/src/uploads/" . $filename,
                                  ]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');

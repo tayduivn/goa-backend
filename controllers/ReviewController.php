@@ -51,7 +51,7 @@ class ReviewController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $stars        = $request_body['stars'];
+    $stars        = (int)$request_body['stars'];
     $message      = $request_body['message'];
     $title        = $request_body['title'];
     $user_id      = $request_body['user_id'];
@@ -61,10 +61,9 @@ class ReviewController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare("
-      INSERT INTO product_review (title, message, stars, user_id, product_id) 
-      VALUES (:title, :message, :stars, :user_id, :product_id)"
-    );
+    $query   = "INSERT INTO product_review (title, message, stars, user_id, product_id) 
+                VALUES (:title, :message, :stars, :user_id, :product_id)";
+    $prepare = $this->db->prepare($query);
     $result  = $prepare->execute([
                                    'title'      => $title,
                                    'message'    => $message,
@@ -79,7 +78,7 @@ class ReviewController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
     $id           = $request_body['id'];
-    $stars        = $request_body['stars'];
+    $stars        = (int)$request_body['stars'];
     $message      = $request_body['message'];
     $title        = $request_body['title'];
     $user_id      = $request_body['user_id'];

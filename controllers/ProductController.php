@@ -394,8 +394,8 @@ class ProductController extends HandleRequest {
     $description_one   = $request_body['description_one'];
     $description_two   = $request_body['description_two'];
     $preparation       = $request_body['preparation'];
-    $regular_price     = $request_body['regular_price'];
-    $quantity          = $request_body['quantity'];
+    $regular_price     = (int)$request_body['regular_price'];
+    $quantity          = (int)$request_body['quantity'];
     $user_id           = $request_body['user_id'];
 
     if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($preparation)
@@ -434,8 +434,8 @@ class ProductController extends HandleRequest {
     $description_one   = $request_body['description_one'];
     $description_two   = $request_body['description_two'];
     $preparation       = $request_body['preparation'];
-    $regular_price     = $request_body['regular_price'];
-    $quantity          = $request_body['quantity'];
+    $regular_price     = (int)$request_body['regular_price'];
+    $quantity          = (int)$request_body['quantity'];
     $user_id           = $request_body['user_id'];
 
     if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one)
@@ -443,13 +443,12 @@ class ProductController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    $prepare = $this->db->prepare(
-      "UPDATE product 
-        SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
-            description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
-            quantity = :quantity, user_id = :user_id
-        WHERE id = :id"
-    );
+    $query   = "UPDATE product 
+                  SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
+                  description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
+                  quantity = :quantity, user_id = :user_id
+                  WHERE id = :id";
+    $prepare = $this->db->prepare($query);
 
     $result = $prepare->execute([
                                   'id'                => $id,

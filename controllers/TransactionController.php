@@ -140,9 +140,7 @@ class TransactionController extends HandleRequest {
     $statement->execute(['id' => $id]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE transaction SET active = :active WHERE id = :id"
-      );
+      $prepare = $this->db->prepare("UPDATE transaction SET active = :active WHERE id = :id");
       $result  = $prepare->execute(['id' => $id, 'active' => 0]);
 
       return $this->postSendResponse($response, $result, 'Datos eliminados');

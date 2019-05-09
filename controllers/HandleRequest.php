@@ -55,10 +55,10 @@ class HandleRequest extends Utils {
   public function handleRequest(Response $res, $status, $message = '', $body = '', $pagination = '') {
     if ($status === 200) {
       return $res->withJson([
-                              'status'  => 200,
-                              'data'    => $body,
-                              'pagination'    => $pagination,
-                              'message' => $message ?: 'Success',
+                              'status'     => 200,
+                              'data'       => $body,
+                              'pagination' => $pagination,
+                              'message'    => $message ?: 'Success',
                             ], 200);
 
     } else if ($status === 201) {

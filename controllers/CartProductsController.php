@@ -46,7 +46,7 @@ class CartProductsController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $quantity     = $request_body['quantity'];
+    $quantity     = (int)$request_body['quantity'];
     $cart_id      = $request_body['cart_id'];
     $product_id   = $request_body['product_id'];
 

@@ -81,10 +81,11 @@ class OrderController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $subtotal     = $request_body['subtotal'];
-    $total        = $request_body['total'];
-    $user_id      = $request_body['user_id'];
-    $cart_id      = $request_body['cart_id'];
+    /* TODO: type data decimal in PHP */
+    $subtotal = $request_body['subtotal'];
+    $total    = $request_body['total'];
+    $user_id  = $request_body['user_id'];
+    $cart_id  = $request_body['cart_id'];
 
     if (!isset($subtotal) && !isset($total) && !isset($user_id) && !isset($cart_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
@@ -116,7 +117,7 @@ class OrderController extends HandleRequest {
     }
 
     $prepare = $this->db->prepare("UPDATE `order` SET status = :status WHERE id = :id");
-    $result = $prepare->execute(['id' => $id, 'status' => $status,]);
+    $result  = $prepare->execute(['id' => $id, 'status' => $status,]);
 
     return $this->postSendResponse($response, $result, 'Datos actualizados');
   }
@@ -133,9 +134,7 @@ class OrderController extends HandleRequest {
     $statement->execute(['id' => $id]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE `order` SET status = :active WHERE id = :id"
-      );
+      $prepare = $this->db->prepare("UPDATE `order` SET status = :active WHERE id = :id");
       $result  = $prepare->execute(['id' => $id, 'active' => 0]);
       return $this->postSendResponse($response, $result, 'Datos eliminados');
     } else {

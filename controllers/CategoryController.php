@@ -85,9 +85,7 @@ class CategoryController extends HandleRequest {
     $statement->execute(['idcategory' => $idcategory]);
     $result = $statement->fetch();
     if (is_array($result)) {
-      $prepare = $this->db->prepare(
-        "UPDATE category SET active = :active WHERE id = :idcategory"
-      );
+      $prepare = $this->db->prepare("UPDATE category SET active = :active WHERE id = :idcategory");
       $result  = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
 
       return $this->postSendResponse($response, $result, 'Datos eliminados');
