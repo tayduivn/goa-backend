@@ -166,7 +166,7 @@ class ProductController extends HandleRequest {
       $statement->execute(['id' => $id]);
       $result = $statement->fetchAll();
 
-      if (is_array($result)) {
+      if (is_array($result) && !empty($result)) {
         $myCategories = '';
         foreach ($result as $index => $item) {
           if (!next($result)) {
@@ -217,7 +217,7 @@ class ProductController extends HandleRequest {
             break;
         }
       } else {
-        return $this->handleRequest($response, 400, 'Id product incorrect');
+        return $this->handleRequest($response, 400, 'Id product incorrect or the product not have categories');
       }
     }
 
