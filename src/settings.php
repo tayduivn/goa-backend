@@ -14,8 +14,8 @@ $db = [
   ],
   'prod' => [
     'host' => 'localhost',
-    'user' => 'root',
-    'pass' => '',
+    'user' => 'garden12_america',
+    'pass' => 'ILbwLWh02dh5',
     'dbname' => 'garden12_america',
   ],
 ];
