@@ -39,6 +39,33 @@ class TransactionController extends HandleRequest {
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
 
+    $typePayment = $request_body['type_payment'];
+
+    if (isset($typePayment)) {
+      switch ($typePayment->name) {
+        case 'paypal':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        case 'visa':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        case 'mastercard':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        case 'american express':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        case 'amazon':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        default:
+          return $this->handleRequest($response, 400, 'Incorrect data');
+          break;
+      }
+    } else {
+      return $this->handleRequest($response, 400, 'Incorrect data');
+    }
+
     $cart_id = $request_body['cart_id'];
 
     $code               = $request_body['code'];
@@ -97,6 +124,30 @@ class TransactionController extends HandleRequest {
     }
 
     return $this->handleRequest($response, 400);
+  }
+
+  public function getOrderPaypal($orderId) {
+
+    // 3. Call PayPal to get the transaction details
+    $client   = PayPalClient::client();
+    $response = $client->execute(new OrdersGetRequest($orderId));
+    /**
+     *Enable the following line to print complete response as JSON.
+     */
+    //print json_encode($response->result);
+    print "Status Code: {$response->statusCode}\n";
+    print "Status: {$response->result->status}\n";
+    print "Order ID: {$response->result->id}\n";
+    print "Intent: {$response->result->intent}\n";
+    print "Links:\n";
+    foreach ($response->result->links as $link) {
+      print "\t{$link->rel}: {$link->href}\tCall Type: {$link->method}\n";
+    }
+    // 4. Save the transaction in your database. Implement logic to save transaction to your database for future reference.
+    print "Gross Amount: {$response->result->purchase_units[0]->amount->currency_code} {$response->result->purchase_units[0]->amount->value}\n";
+
+    // To print the whole response body, uncomment the following line
+    // echo json_encode($response->result, JSON_PRETTY_PRINT);
   }
 
   public function update(Request $request, Response $response, $args) {
