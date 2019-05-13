@@ -394,18 +394,19 @@ class ProductController extends HandleRequest {
     $description_one   = $request_body['description_one'];
     $description_two   = $request_body['description_two'];
     $preparation       = $request_body['preparation'];
+    $nutrition         = $request_body['nutrition'];
     $regular_price     = (int)$request_body['regular_price'];
     $quantity          = (int)$request_body['quantity'];
     $user_id           = $request_body['user_id'];
 
-    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($preparation)
+    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($preparation) && !isset($nutrition)
       && !isset($description_two) && !isset($regular_price) && !isset($quantity) && !isset($user_id) && !isset($category_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
     if ($this->existProduct($name)) {
-      $query   = "INSERT INTO product (sku, name, description_short, description_one, description_two, preparation, regular_price, quantity, user_id) 
-        VALUES (:sku, :name,  :description_short,  :description_one,  :description_two, :regular_price, :regular_price, :quantity, :user_id)";
+      $query   = "INSERT INTO product (sku, name, description_short, description_one, description_two, preparation, nutrition, regular_price, quantity, user_id) 
+        VALUES (:sku, :name,  :description_short,  :description_one,  :description_two, :preparation, :nutrition, :regular_price, :quantity, :user_id)";
       $prepare = $this->db->prepare($query);
       $result  = $prepare->execute([
                                      'sku'               => $sku,
@@ -414,6 +415,7 @@ class ProductController extends HandleRequest {
                                      'description_one'   => $description_one,
                                      'description_two'   => $description_two,
                                      'preparation'       => $preparation,
+                                     'nutrition'         => $nutrition,
                                      'regular_price'     => $regular_price,
                                      'quantity'          => $quantity,
                                      'user_id'           => $user_id,
@@ -434,11 +436,12 @@ class ProductController extends HandleRequest {
     $description_one   = $request_body['description_one'];
     $description_two   = $request_body['description_two'];
     $preparation       = $request_body['preparation'];
+    $nutrition         = $request_body['nutrition'];
     $regular_price     = (int)$request_body['regular_price'];
     $quantity          = (int)$request_body['quantity'];
     $user_id           = $request_body['user_id'];
 
-    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one)
+    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($nutrition)
       && !isset($description_two) && !isset($preparation) && !isset($regular_price) && !isset($quantity) && !isset($user_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
@@ -446,7 +449,7 @@ class ProductController extends HandleRequest {
     $query   = "UPDATE product 
                   SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
                   description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
-                  quantity = :quantity, user_id = :user_id
+                  quantity = :quantity, user_id = :user_id, nutrition = :nutrition
                   WHERE id = :id";
     $prepare = $this->db->prepare($query);
 
@@ -458,6 +461,7 @@ class ProductController extends HandleRequest {
                                   'description_one'   => $description_one,
                                   'description_two'   => $description_two,
                                   'preparation'       => $preparation,
+                                  '$nutrition'        => $nutrition,
                                   'regular_price'     => $regular_price,
                                   'quantity'          => $quantity,
                                   'user_id'           => $user_id,
