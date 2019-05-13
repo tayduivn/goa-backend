@@ -29,6 +29,29 @@ $app->group('/api', function () use ($app) {
                                    'error'      => false
                                  ], 200);
     });
+    $app->get('/base', function ($request, $response, $args) use ($app) {
+      $servername = "localhost";
+      $username = "garden12_america";
+      $password = "ILbwLWh02dh5";
+      $db = "garden12_america";
+
+      try {
+        $conn = new PDO("mysql:host=$servername;dbname=$db", $username, $password);
+        // set the PDO error mode to exception
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $routes = "Connected successfully";
+      }
+      catch(PDOException $e) {
+        $routes = "Connection failed: " . $e->getMessage();
+      }
+
+      return $response->withJson([
+                                   'message'    => 'Success',
+                                   'statusCode' => 200,
+                                   'data'       => $routes,
+                                   'error'      => false
+                                 ], 200);
+    });
 
     $app->post('/users/forgot', 'App\Controller\UserController:forgot');
     $app->post('/users/login', 'App\Controller\UserController:login');

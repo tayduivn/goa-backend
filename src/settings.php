@@ -6,11 +6,17 @@ $db = [
     'pass' => '',
     'dbname' => 'goa',
   ],
-  'prod' => [
+  'prod_heroku' => [
     'host' => 'remotemysql.com',
     'user' => '5Jtq5PbmJz',
     'pass' => 'krZkYWmfsI',
     'dbname' => '5Jtq5PbmJz',
+  ],
+  'prod' => [
+    'host' => 'localhost',
+    'user' => 'root',
+    'pass' => '',
+    'dbname' => 'garden12_america',
   ],
 ];
 
