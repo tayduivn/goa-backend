@@ -430,7 +430,7 @@ class ProductController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body      = $request->getParsedBody();
     $id                = $request_body['id'];
-    $sku               = $request_body['name_object'];
+    $sku               = $request_body['sku'];
     $name              = $request_body['name'];
     $description_short = $request_body['description_short'];
     $description_one   = $request_body['description_one'];
