@@ -461,7 +461,7 @@ class ProductController extends HandleRequest {
                                   'description_one'   => $description_one,
                                   'description_two'   => $description_two,
                                   'preparation'       => $preparation,
-                                  '$nutrition'        => $nutrition,
+                                  'nutrition'        => $nutrition,
                                   'regular_price'     => $regular_price,
                                   'quantity'          => $quantity,
                                   'user_id'           => $user_id,
