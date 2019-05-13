@@ -30,7 +30,7 @@ $app->group('/api', function () use ($app) {
                                  ], 200);
     });
     $app->get('/base', function ($request, $response, $args) use ($app) {
-      $servername = "localhost";
+      $servername = "127.0.0.1";
       $username = "garden12_america";
       $password = "ILbwLWh02dh5";
       $db = "garden12_america";
