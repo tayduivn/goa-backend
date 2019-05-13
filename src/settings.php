@@ -7,10 +7,10 @@ $db = [
     'dbname' => 'goa',
   ],
   'prod' => [
-    'host' => '',
-    'user' => '',
-    'pass' => '',
-    'dbname' => '',
+    'host' => 'localhost',
+    'user' => 'garden12_america',
+    'pass' => 'ILbwLWh02dh5',
+    'dbname' => 'garden12_america',
   ],
 ];
 
