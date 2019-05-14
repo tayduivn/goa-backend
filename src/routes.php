@@ -88,7 +88,7 @@ $app->group('/api', function () use ($app) {
   $app->put('/categories/products', 'App\Controller\ProductCategoryController:update');
   $app->delete('/categories/products', 'App\Controller\ProductCategoryController:delete');
 
-  $app->post('/images/register', 'App\Controller\ImageController:register');
+  $app->post('/images/reg', 'App\Controller\ImageController:register');
   $app->post('/images/update', 'App\Controller\ImageController:update');
   $app->delete('/images', 'App\Controller\ImageController:delete');
 

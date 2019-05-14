@@ -7,7 +7,6 @@
 $app->add(new \Tuupola\Middleware\JwtAuthentication(
             [
               "path"      => "/api", /* or ["/api", "/admin"] */
-              "attribute" => "decoded_token_data",
               "ignore"    => ["/api/public"],
               "secret"    => "supersecretkeyyoushouldnotcommittogithub",
               "algorithm" => ["HS256"],
