@@ -39,10 +39,10 @@ return [
     ],
 
     'db'  => [
-      'host'   => $db['prod']['host'],
-      'user'   => $db['prod']['user'],
-      'pass'   => $db['prod']['pass'],
-      'dbname' => $db['prod']['dbname']
+      'host'   => $db['dev']['host'],
+      'user'   => $db['dev']['user'],
+      'pass'   => $db['dev']['pass'],
+      'dbname' => $db['dev']['dbname']
     ],
 
     // jwt settings

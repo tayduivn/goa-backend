@@ -58,7 +58,7 @@ class Utils {
     if (is_array($resultImage) and !empty($resultImage)) {
       $result[$index]['images'] = $resultImage;
     } else {
-      $result[$index]['images'] = [['id_image' => 0, 'image' => 'http://goa-backend/src/uploads/no-image.png']];
+      $result[$index]['images'] = [['id_image' => '0', 'image' => 'http://goa-backend/src/uploads/no-image.png']];
     }
     return $result;
   }
