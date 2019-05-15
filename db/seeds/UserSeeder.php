@@ -21,21 +21,21 @@ class UserSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'email'    => 'ivans10@gmail.com',
-        'first_name'     => 'Ivans',
-        'last_name'     => 'Del Pino',
+        'email'    => 'admin@gmail.com',
+        'first_name'     => 'admin',
+        'last_name'     => 'last',
         'password' => "$2y$10$/C90fWobQk6mUz8UZfb73Oo900vXXM.BZAXKppwnnfgkQNN1BWPjG",
-        'address' => "Santa Rita",
-        'phone' => "04165646545",
+        'address' => "USA",
+        'phone' => "+145645644",
         'role_id' => "1",
       ],
       [
-        'email'    => 'ivans20@gmail.com',
-        'first_name'     => 'Ivans',
-        'last_name'     => 'Del Pino',
+        'email'    => 'goa@gmail.com',
+        'first_name'     => 'goa',
+        'last_name'     => 'last',
         'password' => "$2y$10$/C90fWobQk6mUz8UZfb73Oo900vXXM.BZAXKppwnnfgkQNN1BWPjG",
-        'address' => "Santa Rita",
-        'phone' => "04165646545",
+        'address' => "USA",
+        'phone' => "145645644",
         'role_id' => "2",
       ],
     ];

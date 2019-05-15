@@ -39,10 +39,10 @@ return [
     ],
 
     'db'  => [
-      'host'   => $db['dev']['host'],
-      'user'   => $db['dev']['user'],
-      'pass'   => $db['dev']['pass'],
-      'dbname' => $db['dev']['dbname']
+      'host'   => $db['prod_heroku']['host'],
+      'user'   => $db['prod_heroku']['user'],
+      'pass'   => $db['prod_heroku']['pass'],
+      'dbname' => $db['prod_heroku']['dbname']
     ],
 
     // jwt settings
