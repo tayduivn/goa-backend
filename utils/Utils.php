@@ -142,4 +142,11 @@ class Utils {
     $statement->execute(['cartId' => $cart_id]);
     return !empty($statement->fetchAll());
   }
+
+  /**
+   * @return Braintree_Gateway
+   */
+  public function gateWayPaypal() {
+    return new Braintree_Gateway(['accessToken' => useYourAccessToken,]);
+  }
 }

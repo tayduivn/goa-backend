@@ -23,12 +23,16 @@ class TransactionController extends HandleRequest {
   }
 
   public function getAll(Request $request, Response $response, $args) {
-    $id    = $request->getQueryParam('id');
-    $order = $request->getQueryParam('order', $default = 'ASC');
+    $id      = $request->getQueryParam('id');
+    $order   = $request->getQueryParam('order', $default = 'ASC');
+    $payment = $request->getQueryParam('payment', $default = false);
 
     if ($id !== null) {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE id = :id AND active != '0' ORDER BY " . $order);
       $statement->execute(['id' => $id]);
+    } else if ($payment) {
+      /*$paypalClient = $this->gateWayPaypal()->clientToken()->generate();*/
+      return $this->handleRequest($response, 200, '', ['paypal_client' => 'Ivans']);
     } else {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE active != '0'");
       $statement->execute();
@@ -38,35 +42,11 @@ class TransactionController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-
-    $typePayment = $request_body['type_payment'];
-
-    if (isset($typePayment)) {
-      switch ($typePayment->name) {
-        case 'paypal':
-          $this->getOrderPaypal($typePayment->orderId);
-          break;
-        case 'visa':
-          $this->getOrderPaypal($typePayment->orderId);
-          break;
-        case 'mastercard':
-          $this->getOrderPaypal($typePayment->orderId);
-          break;
-        case 'american express':
-          $this->getOrderPaypal($typePayment->orderId);
-          break;
-        case 'amazon':
-          $this->getOrderPaypal($typePayment->orderId);
-          break;
-        default:
-          return $this->handleRequest($response, 400, 'Incorrect data');
-          break;
-      }
-    } else {
-      return $this->handleRequest($response, 400, 'Incorrect data');
-    }
+    $tokenStripe  = $request_body['token_stripe'];
 
     $cart_id = $request_body['cart_id'];
+
+    $typePayment = $request_body['type_payment'];
 
     $code               = $request_body['code'];
     $processor          = $request_body['processor'];
@@ -80,13 +60,83 @@ class TransactionController extends HandleRequest {
     $total    = $request_body['total'];
     $user_id  = $request_body['user_id'];
 
+    if (isset($typePayment)) {
+      switch ($typePayment['name']) {
+        case 'Paypal':
+          $result = $this->gateWayPaypal()->transaction()->sale([
+                                                            "amount"             => $total,
+                                                            'merchantAccountId'  => 'USD',
+                                                            "paymentMethodNonce" => $_POST['payment_method_nonce'],
+                                                            "orderId"            => $_POST['Mapped to PayPal Invoice Number'],
+                                                            "descriptor"         => [
+                                                              "name" => "Descriptor displayed in customer CC statements. 22 char max"
+                                                            ],
+                                                            "shipping"           => [
+                                                              "firstName"         => "Jen",
+                                                              "lastName"          => "Smith",
+                                                              "company"           => "Braintree",
+                                                              "streetAddress"     => "1 E 1st St",
+                                                              "extendedAddress"   => "Suite 403",
+                                                              "locality"          => "Bartlett",
+                                                              "region"            => "IL",
+                                                              "postalCode"        => "60103",
+                                                              "countryCodeAlpha2" => "US"
+                                                            ],
+                                                            "options"            => [
+                                                              "paypal" => [
+                                                                "customField" => $_POST["PayPal custom field"],
+                                                                "description" => $_POST["Description for PayPal email receipt"]
+                                                              ],
+                                                            ]
+                                                          ]);
+          if ($result->success) {
+            print_r("Success ID: " . $result->transaction->id);
+          } else {
+            print_r("Error Message: " . $result->message);
+          }
+          break;
+        case 'Credit card':
+          if (isset($tokenStripe)) {
+            \Stripe\Stripe::setApiKey('sk_test_SwAD8JBSO0iH4W46hRXUj1CD00qBWuhkuk');
+            $customer = \Stripe\Customer::create([
+                                                   'email'  => $tokenStripe['email'],
+                                                   'source' => $tokenStripe['id'],
+                                                 ]);
+
+            $charge = \Stripe\Charge::create([
+                                               'customer'    => $customer->id,
+                                               'description' => 'Custom t-shirt',
+                                               'amount'      => $total,
+                                               'currency'    => 'usd',
+                                             ]);
+
+            var_dump($charge);
+
+            $cc_num     = $tokenStripe['card']['last4'];
+            $cc_type    = $tokenStripe['card']['brand'];
+            $start_date = $tokenStripe['card']['last4'];
+            $end_date   = $tokenStripe['card']['exp_month'] . ' / ' . $tokenStripe['card']['card->exp_year'];
+          } else {
+            return $this->handleRequest($response, 400, 'Incorrect data 1');
+          }
+          break;
+        case 'Amazon':
+          $this->getOrderPaypal($typePayment->orderId);
+          break;
+        default:
+          return $this->handleRequest($response, 400, 'Incorrect data');
+          break;
+      }
+    } else {
+      return $this->handleRequest($response, 400, 'Incorrect data 2');
+    }
+
     if (!isset($cart_id) AND !isset($subtotal) AND !isset($total) AND !isset($user_id) AND !isset($code)
       AND !isset($processor) AND !isset($processor_trans_id) AND !isset($cc_num) AND !isset($cc_type)
       AND !isset($start_date) AND !isset($end_date)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
 
-    /* TODO: add date, maybe? */
     /* TODO: how to make rollback fail query in PDO */
     $query   = "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`, `cc_num`, `cc_type`) 
                 VALUES (:code, :processor, :processor_trans_id, :cc_num, :cc_type)";
