@@ -70,7 +70,7 @@ class SingUpEmailController extends HandleRequest {
    * @return bool
    */
   public function alreadyEmail($email) {
-    $existingSignUp = $this->db->prepare("SELECT COUNT(*) FROM sing_up_email WHERE email = ':email'");
+    $existingSignUp = $this->db->prepare("SELECT COUNT(*) FROM sing_up_email WHERE email = :email");
     $existingSignUp->execute(['email' => $email]);
     $data_exists = ($existingSignUp->fetchColumn() > 0) ? true : false;
     return $data_exists;
