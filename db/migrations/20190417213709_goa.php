@@ -36,6 +36,7 @@ class Goa extends AbstractMigration {
     $this->tableOrder();
     $this->tableCategory();
     $this->tableProductCategory();
+    $this->tableSingUpEmail();
   }
 
   public function tableRole() {
@@ -222,6 +223,17 @@ class Goa extends AbstractMigration {
       ->addColumn('product_id', 'integer')
       ->addForeignKey('category_id', 'category', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
       ->addForeignKey('product_id', 'product', 'id', ['delete' => 'NO_ACTION', 'update' => 'NO_ACTION'])
+      ->save();
+  }
+
+  public function tableSingUpEmail() {
+    if ($this->hasTable('sing_up_email')) {
+      $this->table('sing_up_email')->drop()->save();
+    }
+    $this->table('sing_up_email')
+      ->addColumn('email', 'string', ['limit' => 255])
+      ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->save();
   }
 }

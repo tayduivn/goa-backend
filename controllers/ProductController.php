@@ -421,10 +421,10 @@ class ProductController extends HandleRequest {
                                      'user_id'           => $user_id,
                                    ]);
     } else {
-      return $this->handleRequest($response, 400, 'Nombre ya registrado');
+      return $this->handleRequest($response, 400, 'Name already exist');
     }
 
-    return $this->postSendResponse($response, $result, 'Datos registrados');
+    return $this->postSendResponse($response, $result, 'Data incorrect');
   }
 
   public function update(Request $request, Response $response, $args) {

@@ -96,7 +96,7 @@ class UserController extends HandleRequest {
     }
 
     if ($this->validateUser($email)) {
-      return $this->handleRequest($response, 409, "Email ya registrado");
+      return $this->handleRequest($response, 409, "Email already exist");
     } else {
       $query   = "INSERT INTO user (`password`, `email`, `address`, `phone`, `role_id`, `first_name`, `last_name`) 
                   VALUES (:password, :email, :address, :phone, :role_id, :first_name, :last_name)";

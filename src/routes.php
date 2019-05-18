@@ -56,6 +56,7 @@ $app->group('/api', function () use ($app) {
     $app->post('/users/forgot', 'App\Controller\UserController:forgot');
     $app->post('/users/login', 'App\Controller\UserController:login');
     $app->post('/users/register', 'App\Controller\UserController:register');
+    $app->post('/emails', 'App\Controller\SingUpEmailController:register');
 
     $app->get('/products', 'App\Controller\ProductController:getAll');
 
@@ -65,6 +66,8 @@ $app->group('/api', function () use ($app) {
 
     $app->get('/reviews', 'App\Controller\ReviewController:getAll');
   });
+
+  $app->get('/emails', 'App\Controller\SingUpEmailController:getAll');
 
   $app->get('/users', 'App\Controller\UserController:getAll');
   $app->put('/users', 'App\Controller\UserController:update');
