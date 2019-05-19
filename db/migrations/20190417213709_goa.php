@@ -89,7 +89,7 @@ class Goa extends AbstractMigration {
       ->addColumn('description_one', 'string', ['limit' => 255])
       ->addColumn('description_two', 'string')
       ->addColumn('preparation', 'string')
-      ->addColumn('regular_price', 'decimal')
+      ->addColumn('regular_price', 'decimal', ['precision' => 10, 'scale' => 2])
       ->addColumn('nutrition', 'string', ['limit' => 255])
       ->addColumn('quantity', 'integer')
       ->addColumn('active', 'boolean', ['default' => true])

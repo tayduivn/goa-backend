@@ -83,7 +83,7 @@ $app->group('/api', function () use ($app) {
   $app->put('/payments', 'App\Controller\PaymentController:update');
 
   $app->post('/products', 'App\Controller\ProductController:register');
-  $app->put('/products', 'App\Controller\ProductController:update');
+  $app->post('/products/update', 'App\Controller\ProductController:update');
   $app->delete('/products', 'App\Controller\ProductController:delete');
 
   $app->post('/categories', 'App\Controller\CategoryController:register');
