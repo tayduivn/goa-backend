@@ -91,13 +91,9 @@ class TransactionController extends HandleRequest {
         return $this->handleRequest($response, 400, 'Incorrect data');
       }
 
-      $query   = "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`) VALUES (:code, :processor, :processor_trans_id)";
+      $query   = "INSERT INTO transaction (`processor`, `processor_trans_id`) VALUES (:processor, :processor_trans_id)";
       $prepare = $this->db->prepare($query);
-      $result  = $prepare->execute([
-                                     'code'               => $code,
-                                     'processor'          => $processor,
-                                     'processor_trans_id' => $processor_trans_id,
-                                   ]);
+      $result  = $prepare->execute(['processor' => $processor, 'processor_trans_id' => $processor_trans_id,]);
 
       $transaction_id = $this->db->lastInsertId();
 
@@ -118,6 +114,8 @@ class TransactionController extends HandleRequest {
                                            'cart_id'        => $cart_id,
                                            'transaction_id' => $transaction_id,
                                          ]);
+
+            $this->db->commit();
             return $this->postSendResponse($response, $result, 'Data register');
           }
         }
@@ -126,8 +124,6 @@ class TransactionController extends HandleRequest {
       $this->db->rollBack();
       throw $e;
     }
-
-    $this->db->commit();
 
     return $this->handleRequest($response, 400);
   }

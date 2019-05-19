@@ -33,6 +33,7 @@ class UserSeeder extends AbstractSeed {
         'last_name'     => 'last',
         'password' => "$2y$10$/C90fWobQk6mUz8UZfb73Oo900vXXM.BZAXKppwnnfgkQNN1BWPjG",
         'address' => "1234 Main St.",
+        'state' => "New York",
         'city' => "Chicago",
         'country' => "USA",
         'country_code' => "US",

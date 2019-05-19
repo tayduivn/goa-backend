@@ -64,6 +64,7 @@ class Goa extends AbstractMigration {
       ->addColumn('password', 'string', ['limit' => 255])
       ->addColumn('address', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('city', 'string', ['limit' => 255, 'null' => true])
+      ->addColumn('state', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('country', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('country_code', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('postal_code', 'string', ['limit' => 255, 'null' => true])

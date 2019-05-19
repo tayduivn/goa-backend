@@ -59,8 +59,8 @@ class UserController extends HandleRequest {
 
   public function login(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $statement    = $this->db->prepare("SELECT user.id, user.email, user.first_name, user.last_name, user.password, 
-                                        user.address, user.phone, user.active, user.role_id, 
+    $statement    = $this->db->prepare("SELECT user.id, user.email, user.password, user.first_name, user.last_name, user.city, user.country,
+                                        user.country_code, user.postal_code, user.address, user.phone, user.active, user.role_id, user.state,
                                         user.inserted_at, user.updated_at, 
                                         r.id AS role_id, r.name, r.active, r.inserted_at AS role_inserted, r.updated_at AS role_updated 
                                         FROM user INNER JOIN role r on user.role_id = r.id WHERE email= :email AND user.active != 0");
@@ -69,12 +69,14 @@ class UserController extends HandleRequest {
     $user = $statement->fetchObject();
 
     if (!$user) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     if (!password_verify($request_body['password'], $user->password)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
+
+    unset($user->password);
 
     $token = JWT::encode(['id' => $user->id, 'email' => $user->email], $this->settings['jwt']['secret'], "HS256");
 
@@ -90,26 +92,34 @@ class UserController extends HandleRequest {
     $role_id      = $request_body['role_id'];
     $first_name   = isset($request_body['first_name']) ? $request_body['first_name'] : '';
     $last_name    = isset($request_body['last_name']) ? $request_body['last_name'] : '';
+    $city         = isset($request_body['city']) ? $request_body['city'] : '';
+    $country      = isset($request_body['country']) ? $request_body['country'] : '';
+    $country_code = isset($request_body['country_code']) ? $request_body['country_code'] : '';
+    $postal_code  = isset($request_body['postal_code']) ? $request_body['postal_code'] : '';
 
-    if (!isset($password) && !isset($email) && !isset($address) && !isset($phone) && !isset($role_id)) {
+    if (!isset($password) && !isset($email) && !isset($role_id)) {
       return $this->handleRequest($response, 400, 'Faltan datos');
     }
 
     if ($this->validateUser($email)) {
       return $this->handleRequest($response, 409, "Email already exist");
     } else {
-      $query   = "INSERT INTO user (`password`, `email`, `address`, `phone`, `role_id`, `first_name`, `last_name`) 
-                  VALUES (:password, :email, :address, :phone, :role_id, :first_name, :last_name)";
+      $query   = "INSERT INTO user (email, first_name, last_name, password, address, city, state, country, country_code, postal_code, phone, role_id) 
+                  VALUES (:email, :first_name, :last_name, :password, :address, :city, :state, :country, :country_code, :postal_code, :phone, :role_id)";
       $prepare = $this->db->prepare($query);
 
       $result = $prepare->execute([
-                                    'email'      => $email,
-                                    'password'   => password_hash($password, PASSWORD_BCRYPT),
-                                    'first_name' => $first_name,
-                                    'last_name'  => $last_name,
-                                    'address'    => $address,
-                                    'phone'      => $phone,
-                                    'role_id'    => $role_id,
+                                    'email'        => $email,
+                                    'password'     => password_hash($password, PASSWORD_BCRYPT),
+                                    'first_name'   => $first_name,
+                                    'last_name'    => $last_name,
+                                    'address'      => $address,
+                                    'city'         => $city,
+                                    'country'      => $country,
+                                    'country_code' => $country_code,
+                                    'postal_code'  => $postal_code,
+                                    'phone'        => $phone,
+                                    'role_id'      => $role_id,
                                   ]);
 
       if ($result) {
@@ -148,21 +158,31 @@ class UserController extends HandleRequest {
     $role_id      = $request_body['role_id'];
     $first_name   = isset($request_body['first_name']) ? $request_body['first_name'] : '';
     $last_name    = isset($request_body['last_name']) ? $request_body['last_name'] : '';
+    $city         = isset($request_body['city']) ? $request_body['city'] : '';
+    $country      = isset($request_body['country']) ? $request_body['country'] : '';
+    $country_code = isset($request_body['country_code']) ? $request_body['country_code'] : '';
+    $postal_code  = isset($request_body['postal_code']) ? $request_body['postal_code'] : '';
 
     if (!isset($email) && !isset($address) && !isset($phone) && !isset($role_id)) {
       return $this->handleRequest($response, 400, 'Invalid request. Required iduser, street, phone, type');
     }
 
     $query   = "UPDATE user SET  first_name = :first_name, last_name = :last_name, address = :address, 
-                phone = :phone, role_id = :role_id  WHERE id = :id";
+                phone = :phone, role_id = :role_id, city = :city, state = :state, country = :country, 
+                country_code = :country_code, postal_code = :postal_code  
+                WHERE id = :id";
     $prepare = $this->db->prepare($query);
     $result  = $prepare->execute([
                                    'id'         => $id,
-                                   'first_name' => $first_name,
-                                   'last_name'  => $last_name,
-                                   'address'    => $address,
-                                   'phone'      => $phone,
-                                   'role_id'    => $role_id,
+                                   'first_name'   => $first_name,
+                                   'last_name'    => $last_name,
+                                   'address'      => $address,
+                                   'city'         => $city,
+                                   'country'      => $country,
+                                   'country_code' => $country_code,
+                                   'postal_code'  => $postal_code,
+                                   'phone'        => $phone,
+                                   'role_id'      => $role_id,
                                  ]);
     return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
   }
@@ -179,7 +199,7 @@ class UserController extends HandleRequest {
     $user = $statement->fetchObject();
 
     if (!$user) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     if (!password_verify($request_body['password'], $user->password)) {
@@ -187,7 +207,7 @@ class UserController extends HandleRequest {
     }
 
     if (!isset($id) && !isset($password)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     $prepare = $this->db->prepare("UPDATE user SET  password = :password WHERE id = :id");
@@ -203,7 +223,7 @@ class UserController extends HandleRequest {
     $iduser       = $request_body['id'];
 
     if (!isset($iduser)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     $statement = $this->db->prepare("SELECT * FROM user WHERE id = :iduser AND active != '0'");

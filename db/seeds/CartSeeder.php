@@ -22,6 +22,10 @@ class CartSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
+        'status'      => 'checkout',
+        'user_id'    => 2,
+      ],
+      [
         'status'      => 'current',
         'user_id'    => 2,
       ]
