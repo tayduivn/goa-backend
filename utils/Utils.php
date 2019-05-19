@@ -145,9 +145,73 @@ class Utils {
   }
 
   /**
+   * @param $db
    * @return Braintree_Gateway
    */
-  public function gateWayPaypal() {
-    return new Braintree_Gateway(['accessToken' => 'access_token$sandbox$h4gcn854cmqpf3py$ec225a5a6a70233329e66efcc9622b60',]);
+  public function gateWayPaypal($db) {
+    $statement = $db->prepare("SELECT * FROM payment");
+    $statement->execute();
+    $result = $statement->fetchAll();
+    return new Braintree_Gateway(['accessToken' => $result[0]['paypal_token'],]);
+  }
+
+  /**
+   * @param $db
+   * @param $tokenStripe
+   * @param $total
+   */
+  public function postStripe($db, $tokenStripe, $total) {
+    $statement = $db->prepare("SELECT * FROM payment");
+    $statement->execute();
+    $result = $statement->fetchAll();
+
+    \Stripe\Stripe::setApiKey($result[0]['stripe_secret_token']);
+    $customer = \Stripe\Customer::create([
+                                           'email'  => $tokenStripe['email'],
+                                           'source' => $tokenStripe['id'],
+                                         ]);
+
+    $charge = \Stripe\Charge::create([
+                                       'customer'    => $customer->id,
+                                       'description' => 'Custom t-shirt',
+                                       'amount'      => $total,
+                                       'currency'    => 'usd',
+                                     ]);
+  }
+
+  /**
+   * @param $db
+   * @param $total
+   * @param $processor
+   * @param $payloadPaypal
+   * @return mixed
+   */
+  public function postPaypal($db, $total, $processor, $payloadPaypal) {
+    $payer_info       = $payloadPaypal['payer_info'];
+    $shipping_address = $payer_info['shipping_address'];
+    $options          = [
+      "amount"             => $total,
+      'merchantAccountId'  => 'USD',
+      "paymentMethodNonce" => $payloadPaypal['nonce'],
+      "orderId"            => $payloadPaypal['orderID'],
+      "shipping"           => [
+        "firstName"         => isset($payer_info['first_name']) ? $payer_info['first_name'] : '',
+        "lastName"          => isset($payer_info['last_name']) ? $payer_info['last_name'] : '',
+        "company"           => isset($payer_info['company']) ? $payer_info['company'] : '',
+        "streetAddress"     => isset($shipping_address['line1']) ? $shipping_address['line1'] : '',
+        "extendedAddress"   => isset($shipping_address['line2']) ? $shipping_address['line2'] : '',
+        "locality"          => isset($shipping_address['city']) ? $shipping_address['city'] : '',
+        "region"            => isset($shipping_address['state']) ? $shipping_address['state'] : '',
+        "postalCode"        => isset($shipping_address['postal_code']) ? $shipping_address['postal_code'] : '',
+        "countryCodeAlpha2" => isset($shipping_address['country_code']) ? $shipping_address['country_code'] : '',
+      ],
+      "options"            => [
+        "paypal" => [
+          "customField" => "custom 1",
+          "description" => $processor
+        ],
+      ]
+    ];
+    return $this->gateWayPaypal($db)->transaction()->sale($options);
   }
 }

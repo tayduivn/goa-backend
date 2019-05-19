@@ -30,8 +30,8 @@ class TransactionController extends HandleRequest {
     if ($id !== null) {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE id = :id AND active != '0' ORDER BY " . $order);
       $statement->execute(['id' => $id]);
-    } else if ($payment) {
-      $paypalClient = $this->gateWayPaypal()->clientToken()->generate();
+    } else if ($payment === 'Paypal') {
+      $paypalClient = $this->gateWayPaypal($this->db)->clientToken()->generate();
       return $this->handleRequest($response, 200, '', ['paypal_client' => $paypalClient]);
     } else {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE active != '0'");
@@ -49,34 +49,30 @@ class TransactionController extends HandleRequest {
 
     $cart_id = $request_body['cart_id'];
 
-    $typePayment = $request_body['type_payment'];
-
     $code               = $request_body['code'];
     $processor          = $request_body['processor'];
     $processor_trans_id = $request_body['processor_trans_id'];
-    $cc_num             = $request_body['cc_num'];
-    $cc_type            = $request_body['cc_type'];
 
     $subtotal = $request_body['subtotal'];
     $total    = $request_body['total'];
     $user_id  = $request_body['user_id'];
 
     try {
-      if (isset($typePayment)) {
-        switch ($typePayment['name']) {
+      if (isset($processor)) {
+        switch ($processor) {
           case 'Paypal':
-            $result = $this->sendPaypal($total, $payloadPaypal);
+            $result = $this->postPaypal($this->db, $total, $processor, $payloadPaypal);
             if ($result->success) {
-              var_dump("Success ID: " . $result->transaction->id);
+              $processor_trans_id = $result->transaction->id;
             } else {
-              var_dump("Error Message: " . $result->message);
+              return $this->handleRequest($response, 400, "Error Message: " . $result->message);
             }
             break;
           case 'Credit card':
             if (isset($tokenStripe)) {
-              list($cc_num, $cc_type) = $this->sendStripe($tokenStripe, $total);
+              $this->postStripe($this->db, $tokenStripe, $total);
             } else {
-              return $this->handleRequest($response, 400, 'Incorrect data 1');
+              return $this->handleRequest($response, 400, 'Incorrect data stripe');
             }
             break;
           case 'Amazon':
@@ -87,25 +83,20 @@ class TransactionController extends HandleRequest {
             break;
         }
       } else {
-        return $this->handleRequest($response, 400, 'Incorrect data 2');
+        return $this->handleRequest($response, 400, 'Incorrect processor');
       }
 
       if (!isset($cart_id) AND !isset($subtotal) AND !isset($total) AND !isset($user_id) AND !isset($code)
-        AND !isset($processor) AND !isset($processor_trans_id) AND !isset($cc_num) AND !isset($cc_type)
-        AND !isset($start_date) AND !isset($end_date)) {
-        return $this->handleRequest($response, 400, 'Datos incorrectos');
+        AND !isset($processor) AND !isset($processor_trans_id)) {
+        return $this->handleRequest($response, 400, 'Incorrect data');
       }
 
-      /* TODO: how to make rollback fail query in PDO */
-      $query   = "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`, `cc_num`, `cc_type`) 
-                VALUES (:code, :processor, :processor_trans_id, :cc_num, :cc_type)";
+      $query   = "INSERT INTO transaction (`code`, `processor`, `processor_trans_id`) VALUES (:code, :processor, :processor_trans_id)";
       $prepare = $this->db->prepare($query);
       $result  = $prepare->execute([
                                      'code'               => $code,
                                      'processor'          => $processor,
                                      'processor_trans_id' => $processor_trans_id,
-                                     'cc_num'             => $cc_num,
-                                     'cc_type'            => $cc_type,
                                    ]);
 
       $transaction_id = $this->db->lastInsertId();
@@ -127,7 +118,7 @@ class TransactionController extends HandleRequest {
                                            'cart_id'        => $cart_id,
                                            'transaction_id' => $transaction_id,
                                          ]);
-            return $this->postSendResponse($response, $result, 'Datos registrados');
+            return $this->postSendResponse($response, $result, 'Data register');
           }
         }
       }
@@ -241,64 +232,6 @@ class TransactionController extends HandleRequest {
       return false;
     }
     return false;
-  }
-
-  /**
-   * @param $tokenStripe
-   * @param $total
-   * @return array
-   */
-  public function sendStripe($tokenStripe, $total) {
-    \Stripe\Stripe::setApiKey('sk_test_SwAD8JBSO0iH4W46hRXUj1CD00qBWuhkuk');
-    $customer = \Stripe\Customer::create([
-                                           'email'  => $tokenStripe['email'],
-                                           'source' => $tokenStripe['id'],
-                                         ]);
-
-    $charge = \Stripe\Charge::create([
-                                       'customer'    => $customer->id,
-                                       'description' => 'Custom t-shirt',
-                                       'amount'      => $total,
-                                       'currency'    => 'usd',
-                                     ]);
-
-    $cc_num  = $tokenStripe['card']['last4'];
-    $cc_type = $tokenStripe['card']['brand'];
-    return array($cc_num, $cc_type);
-  }
-
-  /**
-   * @param $total
-   * @return mixed
-   */
-  public function sendPaypal($total, $payloadPaypal) {
-    $options = [
-      "amount"             => $total,
-      'merchantAccountId'  => 'USD',
-      "paymentMethodNonce" => $_POST['payment_method_nonce'],
-      "orderId"            => $_POST['Mapped to PayPal Invoice Number'],
-      "descriptor"         => [
-        "name" => "Descriptor displayed in customer CC statements. 22 char max"
-      ],
-      "shipping"           => [
-        "firstName"         => "Jen",
-        "lastName"          => "Smith",
-        "company"           => "Braintree",
-        "streetAddress"     => "1 E 1st St",
-        "extendedAddress"   => "Suite 403",
-        "locality"          => "Bartlett",
-        "region"            => "IL",
-        "postalCode"        => "60103",
-        "countryCodeAlpha2" => "US"
-      ],
-      "options"            => [
-        "paypal" => [
-          "customField" => $_POST["PayPal custom field"],
-          "description" => $_POST["Description for PayPal email receipt"]
-        ],
-      ]
-    ];
-    return $this->gateWayPaypal()->transaction()->sale($options);
   }
 
 }

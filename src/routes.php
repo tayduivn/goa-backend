@@ -79,6 +79,9 @@ $app->group('/api', function () use ($app) {
   $app->put('/transactions', 'App\Controller\TransactionController:update');
   $app->delete('/transactions', 'App\Controller\TransactionController:delete');
 
+  $app->get('/payments', 'App\Controller\PaymentController:getAll');
+  $app->put('/payments', 'App\Controller\PaymentController:update');
+
   $app->post('/products', 'App\Controller\ProductController:register');
   $app->put('/products', 'App\Controller\ProductController:update');
   $app->delete('/products', 'App\Controller\ProductController:delete');

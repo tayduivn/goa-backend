@@ -2,7 +2,7 @@
 
 use Phinx\Seed\AbstractSeed;
 
-class TransactionSeeder extends AbstractSeed {
+class PaymentsSeeder extends AbstractSeed {
 
   /**
    * Run Method.
@@ -15,10 +15,11 @@ class TransactionSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'processor'          => 'Paypal',
-        'processor_trans_id' => '002',
+        'stripe_secret_token'      => 'your secret token',
+        'stripe_publishable_token' => 'your publishable token',
+        'paypal_token'             => 'your paypal token',
       ]
     ];
-    $this->table('transaction')->insert($data)->save();
+    $this->table('payment')->insert($data)->save();
   }
 }

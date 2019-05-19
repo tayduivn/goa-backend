@@ -37,6 +37,7 @@ class Goa extends AbstractMigration {
     $this->tableCategory();
     $this->tableProductCategory();
     $this->tableSingUpEmail();
+    $this->tablePayment();
   }
 
   public function tableRole() {
@@ -62,6 +63,10 @@ class Goa extends AbstractMigration {
       ->addColumn('last_name', 'string', ['limit' => 255])
       ->addColumn('password', 'string', ['limit' => 255])
       ->addColumn('address', 'string', ['limit' => 255, 'null' => true])
+      ->addColumn('city', 'string', ['limit' => 255, 'null' => true])
+      ->addColumn('country', 'string', ['limit' => 255, 'null' => true])
+      ->addColumn('country_code', 'string', ['limit' => 255, 'null' => true])
+      ->addColumn('postal_code', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('phone', 'string', ['limit' => 255, 'null' => true])
       ->addColumn('active', 'boolean', ['default' => true])
       ->addColumn('role_id', 'integer')
@@ -161,17 +166,12 @@ class Goa extends AbstractMigration {
       $this->table('transaction')->drop()->save();
     }
     $this->table('transaction')
-      ->addColumn('code', 'string', ['limit' => 255])
       ->addColumn('processor', 'string', ['limit' => 255])
       ->addColumn('processor_trans_id', 'string', ['limit' => 255])
-      ->addColumn('cc_num', 'string', ['limit' => 255])
-      ->addColumn('cc_type', 'string', ['limit' => 255])
       ->addColumn('active', 'boolean', ['default' => true])
-      ->addColumn('start_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addColumn('end_date', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
-      ->addIndex(['id', 'code'], ['unique' => true])
+      ->addIndex(['id'], ['unique' => true])
       ->save();
   }
 
@@ -232,6 +232,19 @@ class Goa extends AbstractMigration {
     }
     $this->table('sing_up_email')
       ->addColumn('email', 'string', ['limit' => 255])
+      ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
+      ->save();
+  }
+
+  public function tablePayment() {
+    if ($this->hasTable('payment')) {
+      $this->table('payment')->drop()->save();
+    }
+    $this->table('payment')
+      ->addColumn('stripe_secret_token', 'string', ['limit' => 255])
+      ->addColumn('stripe_publishable_token', 'string', ['limit' => 255])
+      ->addColumn('paypal_token', 'string', ['limit' => 255])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->save();
