@@ -93,6 +93,7 @@ class UserController extends HandleRequest {
     $first_name   = isset($request_body['first_name']) ? $request_body['first_name'] : '';
     $last_name    = isset($request_body['last_name']) ? $request_body['last_name'] : '';
     $city         = isset($request_body['city']) ? $request_body['city'] : '';
+    $state        = isset($request_body['state']) ? $request_body['state'] : '';
     $country      = isset($request_body['country']) ? $request_body['country'] : '';
     $country_code = isset($request_body['country_code']) ? $request_body['country_code'] : '';
     $postal_code  = isset($request_body['postal_code']) ? $request_body['postal_code'] : '';
@@ -115,6 +116,7 @@ class UserController extends HandleRequest {
                                     'last_name'    => $last_name,
                                     'address'      => $address,
                                     'city'         => $city,
+                                    'state'        => $state,
                                     'country'      => $country,
                                     'country_code' => $country_code,
                                     'postal_code'  => $postal_code,
@@ -123,7 +125,14 @@ class UserController extends HandleRequest {
                                   ]);
 
       if ($result) {
-        return $this->handleRequest($response, 200, "Datos registrados", ['idUser' => $this->db->lastInsertId()]);
+        $userId  = $this->db->lastInsertId();
+        $prepare = $this->db->prepare("INSERT INTO cart (user_id) VALUES (:user_id)");
+        $prepare->execute(['user_id' => $userId]);
+        if ($result) {
+          return $this->handleRequest($response, 200, "Data registered", ['idUser' => $userId]);
+        } else {
+          return $this->handleRequest($response, 500);
+        }
       } else {
         return $this->handleRequest($response, 500);
       }
@@ -159,6 +168,7 @@ class UserController extends HandleRequest {
     $first_name   = isset($request_body['first_name']) ? $request_body['first_name'] : '';
     $last_name    = isset($request_body['last_name']) ? $request_body['last_name'] : '';
     $city         = isset($request_body['city']) ? $request_body['city'] : '';
+    $state        = isset($request_body['state']) ? $request_body['state'] : '';
     $country      = isset($request_body['country']) ? $request_body['country'] : '';
     $country_code = isset($request_body['country_code']) ? $request_body['country_code'] : '';
     $postal_code  = isset($request_body['postal_code']) ? $request_body['postal_code'] : '';
@@ -173,11 +183,12 @@ class UserController extends HandleRequest {
                 WHERE id = :id";
     $prepare = $this->db->prepare($query);
     $result  = $prepare->execute([
-                                   'id'         => $id,
+                                   'id'           => $id,
                                    'first_name'   => $first_name,
                                    'last_name'    => $last_name,
                                    'address'      => $address,
                                    'city'         => $city,
+                                   'state'        => $state,
                                    'country'      => $country,
                                    'country_code' => $country_code,
                                    'postal_code'  => $postal_code,
