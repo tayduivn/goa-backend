@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use Braintree_Gateway;
 use Slim\Http\UploadedFile;
 
 /**
@@ -147,6 +148,6 @@ class Utils {
    * @return Braintree_Gateway
    */
   public function gateWayPaypal() {
-    return new Braintree_Gateway(['accessToken' => useYourAccessToken,]);
+    return new Braintree_Gateway(['accessToken' => 'access_token$sandbox$h4gcn854cmqpf3py$ec225a5a6a70233329e66efcc9622b60',]);
   }
 }

@@ -28,7 +28,7 @@
     "bryanjhv/slim-session": "~3.0",
     "akrabat/rka-slim-session-middleware": "^2.0",
     "stripe/stripe-php": "^6.35",
-    "braintree/braintree_php" : "3.36.0"
+    "braintree/braintree_php": "^3.40"
   },
   "require-dev": {
     "phpunit/phpunit": ">=4.8 < 6.0"

@@ -31,8 +31,8 @@ class TransactionController extends HandleRequest {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE id = :id AND active != '0' ORDER BY " . $order);
       $statement->execute(['id' => $id]);
     } else if ($payment) {
-      /*$paypalClient = $this->gateWayPaypal()->clientToken()->generate();*/
-      return $this->handleRequest($response, 200, '', ['paypal_client' => 'Ivans']);
+      $paypalClient = $this->gateWayPaypal()->clientToken()->generate();
+      return $this->handleRequest($response, 200, '', ['paypal_client' => $paypalClient]);
     } else {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE active != '0'");
       $statement->execute();
@@ -56,8 +56,6 @@ class TransactionController extends HandleRequest {
     $processor_trans_id = $request_body['processor_trans_id'];
     $cc_num             = $request_body['cc_num'];
     $cc_type            = $request_body['cc_type'];
-    $start_date         = $request_body['start_date'];
-    $end_date           = $request_body['end_date'];
 
     $subtotal = $request_body['subtotal'];
     $total    = $request_body['total'];
@@ -76,7 +74,7 @@ class TransactionController extends HandleRequest {
             break;
           case 'Credit card':
             if (isset($tokenStripe)) {
-              list($cc_num, $cc_type, $start_date, $end_date) = $this->sendStripe($tokenStripe, $total);
+              list($cc_num, $cc_type) = $this->sendStripe($tokenStripe, $total);
             } else {
               return $this->handleRequest($response, 400, 'Incorrect data 1');
             }
@@ -264,13 +262,9 @@ class TransactionController extends HandleRequest {
                                        'currency'    => 'usd',
                                      ]);
 
-    var_dump($charge);
-
-    $cc_num     = $tokenStripe['card']['last4'];
-    $cc_type    = $tokenStripe['card']['brand'];
-    $start_date = $tokenStripe['card']['last4'];
-    $end_date   = $tokenStripe['card']['exp_month'] . ' / ' . $tokenStripe['card']['card->exp_year'];
-    return array($cc_num, $cc_type, $start_date, $end_date);
+    $cc_num  = $tokenStripe['card']['last4'];
+    $cc_type = $tokenStripe['card']['brand'];
+    return array($cc_num, $cc_type);
   }
 
   /**

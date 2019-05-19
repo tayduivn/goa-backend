@@ -59,7 +59,7 @@ class SingUpEmailController extends HandleRequest {
         $result = $prepare->execute(['email' => $email,]);
       }
       $this->sendEmail('Subscribed to Gardens of America', 'Welcome to Gardens of America', $email);
-      return $this->postSendResponse($response, $result, 'Send email');
+      return $this->postSendResponse($response, $result, 'Suscribe email');
     } else {
       return $this->handleRequest($response, 400, $message);
     }
