@@ -27,9 +27,7 @@ class Utils {
   }
 
   function getBaseURL() {
-    $HTTPS = $_SERVER['HTTPS'];
-    var_dump($HTTPS);
-    $args = isset($HTTPS) && $HTTPS != 'off' ? 'https' : 'http';
+    $args = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https' : 'http';
     return sprintf("%s://%s", $args, $_SERVER['SERVER_NAME']);
   }
 
