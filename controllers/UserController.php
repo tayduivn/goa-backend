@@ -59,7 +59,7 @@ class UserController extends HandleRequest {
 
   public function login(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    $statement    = $this->db->prepare("SELECT user.id, user.email, user.password, user.first_name, user.last_name, user.city, user.country,
+    $statement    = $this->db->prepare("SELECT user.id, user.email, user.password, user.first_name, user.last_name, user.city, user.country, user.state,
                                         user.country_code, user.postal_code, user.address, user.phone, user.active, user.role_id, user.state,
                                         user.inserted_at, user.updated_at, 
                                         r.id AS role_id, r.name, r.active, r.inserted_at AS role_inserted, r.updated_at AS role_updated 

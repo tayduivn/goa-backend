@@ -174,7 +174,7 @@ class Utils {
     $charge = \Stripe\Charge::create([
                                        'customer'    => $customer->id,
                                        'description' => 'Custom t-shirt',
-                                       'amount'      => $total,
+                                       'amount'      => str_replace(".", "", $total),
                                        'currency'    => 'usd',
                                      ]);
   }
