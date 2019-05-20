@@ -27,9 +27,10 @@ class Utils {
   }
 
   function getBaseURL() {
-    return sprintf("%s://%s",
-                   isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http',
-                   $_SERVER['SERVER_NAME']);
+    $HTTPS = $_SERVER['HTTPS'];
+    var_dump($HTTPS);
+    $args = isset($HTTPS) && $HTTPS != 'off' ? 'https' : 'http';
+    return sprintf("%s://%s", $args, $_SERVER['SERVER_NAME']);
   }
 
   function sendEmail($subject, $message, $emailRecipient, $emailSender = 'desarrollo.theroom@gmail.com') {
