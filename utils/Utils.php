@@ -27,7 +27,9 @@ class Utils {
   }
 
   function getBaseURL() {
-    $args = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https' : 'http';
+    $heroku = isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == "https";
+    $server = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    $args   = ($heroku) || ($server) ? 'https' : 'http';
     return sprintf("%s://%s", $args, $_SERVER['SERVER_NAME']);
   }
 
