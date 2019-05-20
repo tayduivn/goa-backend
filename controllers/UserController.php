@@ -68,7 +68,7 @@ class UserController extends HandleRequest {
     $statement->execute();
     $user = $statement->fetchObject();
 
-    var_dump($_SERVER['HTTPS']);
+    var_dump($_SERVER['HTTP_X_FORWARDED_PROTO']);
 
     if (!$user) {
       return $this->handleRequest($response, 400, 'Data incorrect');
