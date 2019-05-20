@@ -1,6 +1,8 @@
 RewriteEngine on
 RewriteBase /
 
+#Normal way (in case you need to deploy to NON-heroku)
+RewriteCond %{HTTPS} !=on
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
