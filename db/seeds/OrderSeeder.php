@@ -23,9 +23,9 @@ class OrderSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'subtotal' => 500.3,
-        'total'    => 800.3,
-        'user_id'  => 1,
+        'subtotal' => 1401.25,
+        'total'    => 1401.25,
+        'user_id'  => 2,
         'cart_id'  => 1,
         'transaction_id'  => 1,
       ]

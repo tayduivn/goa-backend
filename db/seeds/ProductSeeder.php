@@ -45,6 +45,18 @@ class ProductSeeder extends AbstractSeed {
         'preparation'       => '1. Ingres el batido',
         'quantity'          => 50,
         'user_id'           => '1',
+      ],
+      [
+        'sku'               => '002',
+        'name'              => 'Cacao 2',
+        'description_short' => 'Producto para el bienestar',
+        'description_one'   => 'Producto para el bienestar one',
+        'description_two'   => 'Producto para el bienestar two',
+        'regular_price'     => 300.25,
+        'nutrition'         => 'http://goa-backend/src/uploads/no-image.png',
+        'preparation'       => '1. Ingres el batido',
+        'quantity'          => 50,
+        'user_id'           => '1',
       ]
     ];
     $this->table('product')->insert($data)->save();

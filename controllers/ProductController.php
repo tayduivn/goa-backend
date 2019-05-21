@@ -388,7 +388,6 @@ class ProductController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body      = $request->getParsedBody();
-    $sku               = $request_body['sku'];
     $name              = $request_body['name'];
     $description_short = $request_body['description_short'];
     $description_one   = $request_body['description_one'];
@@ -398,7 +397,7 @@ class ProductController extends HandleRequest {
     $quantity          = (int)$request_body['quantity'];
     $user_id           = $request_body['user_id'];
 
-    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one) && !isset($preparation)
+    if (!isset($name) && !isset($description_short) && !isset($description_one) && !isset($preparation)
       && !isset($description_two) && !isset($regular_price) && !isset($quantity) && !isset($user_id) && !isset($category_id)) {
       return $this->handleRequest($response, 400, 'Datos incorrectos');
     }
@@ -412,7 +411,9 @@ class ProductController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    if ($this->existProduct($name)) {
+    $sku = ''; /* TODO: how to string without spaces, first ten letters and uppercase */
+
+    if ($this->existProductName($name)) {
       $query   = "INSERT INTO product (sku, name, description_short, description_one, description_two, preparation, nutrition, regular_price, quantity, user_id) 
         VALUES (:sku, :name,  :description_short,  :description_one,  :description_two, :preparation, :nutrition, :regular_price, :quantity, :user_id)";
       $prepare = $this->db->prepare($query);
@@ -438,7 +439,6 @@ class ProductController extends HandleRequest {
   public function update(Request $request, Response $response, $args) {
     $request_body      = $request->getParsedBody();
     $id                = $request_body['id'];
-    $sku               = $request_body['sku'];
     $name              = $request_body['name'];
     $description_short = $request_body['description_short'];
     $description_one   = $request_body['description_one'];
@@ -457,12 +457,12 @@ class ProductController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    if (!isset($sku) && !isset($name) && !isset($description_short) && !isset($description_one)
+    if (!isset($name) && !isset($description_short) && !isset($description_one)
       && !isset($description_two) && !isset($preparation) && !isset($regular_price) && !isset($quantity) && !isset($user_id)) {
       return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
-    if ($this->existProduct($name)) {
+    if ($this->existProductName($name)) {
       $query   = "UPDATE product 
                   SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
                   description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
@@ -514,7 +514,7 @@ class ProductController extends HandleRequest {
    * @param $name
    * @return mixed
    */
-  public function existProduct($name) {
+  public function existProductName($name) {
     $statement = $this->db->prepare("SELECT name FROM product WHERE name = :name");
     $statement->execute(['name' => $name]);
     return empty($statement->fetchAll());

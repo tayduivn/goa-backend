@@ -24,12 +24,12 @@ class UserController extends HandleRequest {
   public function getAll(Request $request, Response $response, $args) {
     $order = $request->getQueryParam('order', $default = 'ASC');
     $limit = $request->getQueryParam('limit', $default = '-1');
-    $type  = $request->getQueryParam('type', $default = 'all');
+    $type  = $request->getQueryParam('type', $default = false);
     $id    = $request->getQueryParam('id', $default = false);
 
-    if ($type !== 'all') {
-      $statement = $this->db->prepare("SELECT user.id AS user_id, user.email, user.first_name, user.last_name, user.password, 
-                                        user.address, user.phone, user.active, user.role_id, 
+    if ($type) {
+      $statement = $this->db->prepare("SELECT user.id, user.email, user.password, user.first_name, user.last_name, user.city, user.country, user.state,
+                                        user.country_code, user.postal_code, user.address, user.phone, user.active, user.role_id, user.state,
                                         user.inserted_at AS user_inserted_at, user.updated_at AS user_updated_at, 
                                         r.id, r.name, r.active, r.inserted_at, r.updated_at
                                         FROM user INNER JOIN role r on user.role_id = r.id 
@@ -99,7 +99,7 @@ class UserController extends HandleRequest {
     $postal_code  = isset($request_body['postal_code']) ? $request_body['postal_code'] : '';
 
     if (!isset($password) && !isset($email) && !isset($role_id)) {
-      return $this->handleRequest($response, 400, 'Faltan datos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     if ($this->validateUser($email)) {
@@ -195,7 +195,7 @@ class UserController extends HandleRequest {
                                    'phone'        => $phone,
                                    'role_id'      => $role_id,
                                  ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+    return $result ? $this->handleRequest($response, 201, "Data updated") : $this->handleRequest($response, 500);
   }
 
   public function updatePassword(Request $request, Response $response, $args) {
@@ -214,7 +214,7 @@ class UserController extends HandleRequest {
     }
 
     if (!password_verify($request_body['password'], $user->password)) {
-      return $this->handleRequest($response, 400, 'Contraseña incorrecta');
+      return $this->handleRequest($response, 400, 'Password incorrect');
     }
 
     if (!isset($id) && !isset($password)) {
@@ -226,7 +226,7 @@ class UserController extends HandleRequest {
                                    'id'       => $id,
                                    'password' => password_hash($newPassword, PASSWORD_BCRYPT),
                                  ]);
-    return $result ? $this->handleRequest($response, 201, "Datos actualizados") : $this->handleRequest($response, 500);
+    return $result ? $this->handleRequest($response, 201, "Data updated") : $this->handleRequest($response, 500);
   }
 
   public function delete(Request $request, Response $response, $args) {
@@ -245,9 +245,9 @@ class UserController extends HandleRequest {
         "UPDATE user SET active = :active WHERE id = :iduser"
       );
       $result  = $prepare->execute(['iduser' => $iduser, 'active' => 0]);
-      return $this->postSendResponse($response, $result, 'Datos eliminados');
+      return $this->postSendResponse($response, $result, 'Data deleted');
     } else {
-      return $this->handleRequest($response, 404, "Información no encontrada");
+      return $this->handleRequest($response, 404, "Data incorrect");
     }
   }
 

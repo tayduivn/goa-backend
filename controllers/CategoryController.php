@@ -41,17 +41,17 @@ class CategoryController extends HandleRequest {
     $name         = $request_body['name'];
 
     if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     if ($this->checkCategoryName($name)) {
       $prepare = $this->db->prepare("INSERT INTO category (`name`) VALUES (:name)");
       $result  = $prepare->execute(['name' => $name,]);
     } else {
-      return $this->handleRequest($response, 409, 'Ya se encuentra ese nombre');
+      return $this->handleRequest($response, 409, 'Already name category');
     }
 
-    return $this->postSendResponse($response, $result, 'Datos registrados');
+    return $this->postSendResponse($response, $result, 'Data created');
   }
 
   public function update(Request $request, Response $response, $args) {
@@ -60,17 +60,17 @@ class CategoryController extends HandleRequest {
     $name         = $request_body['name'];
 
     if (!isset($name)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     if ($this->checkCategoryName($name)) {
       $prepare = $this->db->prepare("UPDATE category SET name = :name WHERE id = :idcategory");
       $result  = $prepare->execute(['idcategory' => $idcategory, 'name' => $name,]);
     } else {
-      return $this->handleRequest($response, 409, 'Ya se encuentra ese nombre');
+      return $this->handleRequest($response, 409, 'Already name category');
     }
 
-    return $this->postSendResponse($response, $result, 'Datos actualizados');
+    return $this->postSendResponse($response, $result, 'Data updated');
   }
 
   public function delete(Request $request, Response $response, $args) {
@@ -78,7 +78,7 @@ class CategoryController extends HandleRequest {
     $idcategory   = $request_body['id'];
 
     if (!isset($idcategory)) {
-      return $this->handleRequest($response, 400, 'Datos incorrectos');
+      return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     $statement = $this->db->prepare("SELECT * FROM category WHERE id = :idcategory AND active != '0'");
@@ -88,9 +88,9 @@ class CategoryController extends HandleRequest {
       $prepare = $this->db->prepare("UPDATE category SET active = :active WHERE id = :idcategory");
       $result  = $prepare->execute(['idcategory' => $idcategory, 'active' => 0]);
 
-      return $this->postSendResponse($response, $result, 'Datos eliminados');
+      return $this->postSendResponse($response, $result, 'Data deleted');
     } else {
-      return $this->handleRequest($response, 404, "Categoría no existe");
+      return $this->handleRequest($response, 404, "Category not exist");
     }
   }
 

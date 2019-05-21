@@ -70,9 +70,9 @@ class ProductCategoryController extends HandleRequest {
       $prepare = $this->db->prepare($query);
       $result  = $prepare->execute(['product_id' => $product_id, 'category_id' => $category_id,]);
 
-      return $this->postSendResponse($response, $result, 'Datos eliminados');
+      return $this->postSendResponse($response, $result, 'Data eliminated');
     } else {
-      return $this->handleRequest($response, 404, "Categoría no existe");
+      return $this->handleRequest($response, 404, "Category not exist");
     }
   }
 

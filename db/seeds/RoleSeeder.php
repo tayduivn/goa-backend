@@ -15,10 +15,10 @@ class RoleSeeder extends AbstractSeed {
   public function run() {
     $data = [
       [
-        'name'    => 'Administrador',
+        'name'    => 'Admin',
       ],
       [
-        'name'    => 'Cliente',
+        'name'    => 'Client',
       ],
     ];
     $this->table('role')->insert($data)->save();
