@@ -245,7 +245,9 @@ class Goa extends AbstractMigration {
     $this->table('payment')
       ->addColumn('stripe_secret_token', 'string', ['limit' => 255])
       ->addColumn('stripe_publishable_token', 'string', ['limit' => 255])
+      ->addColumn('production_stripe', 'boolean', ['default' => false])
       ->addColumn('paypal_token', 'string', ['limit' => 255])
+      ->addColumn('production_paypal', 'boolean', ['default' => false])
       ->addColumn('inserted_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->addColumn('updated_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
       ->save();

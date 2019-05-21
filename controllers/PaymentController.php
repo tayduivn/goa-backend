@@ -32,22 +32,27 @@ class PaymentController extends HandleRequest {
     $request_body           = $request->getParsedBody();
     $stripeSecretToken      = $request_body['stripe_secret_token'];
     $stripePublishableToken = $request_body['stripe_publishable_token'];
+    $productionStripe       = $request_body['production_stripe'];
     $paypalToken            = $request_body['paypal_token'];
+    $productionPaypal       = $request_body['production_paypal'];
 
-    if (!isset($stripeSecretToken) and !isset($stripePublishableToken) and !isset($paypalToken)) {
+    if (!isset($stripeSecretToken) and !isset($stripePublishableToken) and !isset($paypalToken)
+      and !isset($productionStripe) and !isset($productionPaypal)) {
       return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
     $query   = "UPDATE payment 
                 SET stripe_secret_token = :stripe_secret_token, stripe_publishable_token = :stripe_publishable_token, 
-                    paypal_token = :paypal_token 
+                    paypal_token = :paypal_token, production_stripe = :production_stripe, production_paypal = :production_paypal 
                 WHERE id = 1";
     $prepare = $this->db->prepare($query);
 
     $result = $prepare->execute([
                                   'stripe_secret_token'      => $stripeSecretToken,
                                   'stripe_publishable_token' => $stripePublishableToken,
+                                  'production_stripe'        => $productionStripe,
                                   'paypal_token'             => $paypalToken,
+                                  'production_paypal'        => $productionPaypal,
                                 ]);
 
     return $this->postSendResponse($response, $result, 'Data updated');
