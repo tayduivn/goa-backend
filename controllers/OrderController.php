@@ -84,7 +84,6 @@ class OrderController extends HandleRequest {
 
   public function register(Request $request, Response $response, $args) {
     $request_body = $request->getParsedBody();
-    /* TODO: type data decimal in PHP */
     $subtotal = $request_body['subtotal'];
     $total    = $request_body['total'];
     $user_id  = $request_body['user_id'];

@@ -411,7 +411,7 @@ class ProductController extends HandleRequest {
       return $this->handleRequest($response, 400, 'No upload image');
     }
 
-    $sku = ''; /* TODO: how to string without spaces, first ten letters and uppercase */
+    $sku = strtoupper(substr(str_replace(' ', '', $name), 0, 10));
 
     if ($this->existProductName($name)) {
       $query   = "INSERT INTO product (sku, name, description_short, description_one, description_two, preparation, nutrition, regular_price, quantity, user_id) 
