@@ -1,21 +1,21 @@
 <?php
 $db = [
-  'dev' => [
-    'host' => 'localhost',
-    'user' => 'root',
-    'pass' => '',
+  'dev'         => [
+    'host'   => 'localhost',
+    'user'   => 'root',
+    'pass'   => '',
     'dbname' => 'goa',
   ],
   'prod_heroku' => [
-    'host' => 'remotemysql.com',
-    'user' => '5Jtq5PbmJz',
-    'pass' => 'krZkYWmfsI',
+    'host'   => 'remotemysql.com',
+    'user'   => '5Jtq5PbmJz',
+    'pass'   => 'krZkYWmfsI',
     'dbname' => '5Jtq5PbmJz',
   ],
-  'prod' => [
-    'host' => 'localhost',
-    'user' => 'garden12_america',
-    'pass' => 'ILbwLWh02dh5',
+  'prod'        => [
+    'host'   => 'localhost',
+    'user'   => 'garden12_america',
+    'pass'   => 'ILbwLWh02dh5',
     'dbname' => 'garden12_america',
   ],
 ];

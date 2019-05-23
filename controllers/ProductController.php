@@ -462,9 +462,9 @@ class ProductController extends HandleRequest {
       return $this->handleRequest($response, 400, 'Data incorrect');
     }
 
-    if ($this->existProductName($name)) {
+    if ($this->existProductName($name, $id)) {
       $query   = "UPDATE product 
-                  SET sku = :sku, name = :name, description_short = :description_short, description_one = :description_one, 
+                  SET name = :name, description_short = :description_short, description_one = :description_one, 
                   description_two = :description_two, preparation = :preparation, regular_price = :regular_price, 
                   quantity = :quantity, user_id = :user_id, nutrition = :nutrition
                   WHERE id = :id";
@@ -472,7 +472,6 @@ class ProductController extends HandleRequest {
 
       $result = $prepare->execute([
                                     'id'                => $id,
-                                    'sku'               => $sku,
                                     'name'              => $name,
                                     'description_short' => $description_short,
                                     'description_one'   => $description_one,
@@ -511,10 +510,18 @@ class ProductController extends HandleRequest {
   }
 
   /**
-   * @param $name
+   * @param        $name
+   * @param string $productId
    * @return mixed
    */
-  public function existProductName($name) {
+  public function existProductName($name, $productId = '') {
+    if ($productId !== '') {
+      $statement = $this->db->prepare("SELECT name FROM product WHERE id = :id AND name = :name");
+      $statement->execute(['id' => $productId, 'name' => $name]);
+      if (!empty($statement->fetchAll())) {
+        return true;
+      }
+    }
     $statement = $this->db->prepare("SELECT name FROM product WHERE name = :name");
     $statement->execute(['name' => $name]);
     return empty($statement->fetchAll());

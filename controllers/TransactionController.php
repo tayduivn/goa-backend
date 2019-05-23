@@ -32,7 +32,10 @@ class TransactionController extends HandleRequest {
       $statement->execute(['id' => $id]);
     } else if ($payment === 'Paypal') {
       $paypalClient = $this->gateWayPaypal($this->db)->clientToken()->generate();
-      return $this->handleRequest($response, 200, '', ['paypal_client' => $paypalClient]);
+      $statement = $this->db->prepare("SELECT * FROM payment");
+      $statement->execute();
+      $result = $statement->fetchAll();
+      return $this->handleRequest($response, 200, '', ['paypal_client' => $paypalClient, 'production_paypal' => $result[0]['production_paypal']]);
     } else {
       $statement = $this->db->prepare("SELECT * FROM `transaction` WHERE active != '0'");
       $statement->execute();
